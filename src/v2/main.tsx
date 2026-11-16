@@ -8,14 +8,14 @@ import StoryV2 from './StoryV2'
 // after a tap, so it starts from this button; nothing is downloaded until then. It stops while the page is hidden.
 function Music() {
   const [on, setOn] = useState(false)
-  const audio = useRef<HTMLAudioElement | null>(null)
+  const audio = useRef<HTMLAudioElement[] | null>(null) // the music loop and, under it, forest birdsong (60 s loop), both all the way through
   const toggle = () => {
-    if (!audio.current) { audio.current = new Audio(import.meta.env.BASE_URL + 'v2/music.mp3'); audio.current.loop = true; audio.current.volume = 0.45 }
-    if (on) audio.current.pause(); else audio.current.play().catch(() => setOn(false))
+    if (!audio.current) audio.current = ['music', 'birds'].map((f) => { const a = new Audio(`${import.meta.env.BASE_URL}v2/${f}.mp3`); a.loop = true; return a }) // the balance is baked into the files (iPhones ignore `volume`)
+    for (const a of audio.current) { if (on) a.pause(); else a.play().catch(() => setOn(false)) }
     setOn(!on)
   }
   useEffect(() => {
-    const vis = () => { if (!audio.current || !on) return; if (document.hidden) audio.current.pause(); else audio.current.play().catch(() => {}) }
+    const vis = () => { if (!audio.current || !on) return; for (const a of audio.current) { if (document.hidden) a.pause(); else a.play().catch(() => {}) } }
     document.addEventListener('visibilitychange', vis)
     return () => document.removeEventListener('visibilitychange', vis)
   }, [on])
