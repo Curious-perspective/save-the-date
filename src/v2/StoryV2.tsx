@@ -22,7 +22,7 @@ if (import.meta.env.DEV) Object.assign(window, { gsap, ScrollTrigger })
   7.5–8.25 the jeep rolls to a stop by the garlanded gate; the sign comes back down with the date
   9.0–10.6 dusk falls; the hornbill brings the scroll; the sign turns over into the RSVP board
 */
-const U = 11.2
+const U = 11.6
 const RESORT_END = /[?&]b=(wood|rock)\b/.test(location.search) ? 0.11 : 0.06 // for the closing picture the resort settles this much lower (in stage heights), so the lit villa stands clear below the RSVP board
 const RESORT_LOW = 0.22 // the resort waits this much lower (in stage heights), wholly hidden behind the riverside, and rises into place as the riverside sinks
 // While we are in the forest, the next scene (the riverside painting) waits this far below its place, in stage heights,
@@ -55,8 +55,9 @@ const BEATS = BEATS_T.filter((b) => !ZONES.some(([a, len, w]) => w < len && b > 
 const BOARD = (/[?&]b=(wood|paper|rock)\b/.exec(location.search)?.[1] ?? 'paper') as 'wood' | 'paper' | 'rock'
 const ROCK = BOARD === 'rock'
 const DIR = ROCK ? 1 : -1 // the carrier leaves upwards (hung) or downwards (a rock sinking)
-const SWAP = 10.5 // the date board has lifted out of the frame (F2 - 0.6 .. F2 - 0.15); the RSVP board comes down from F2 - 0.05
-const F1 = 7.0, F2 = 10.6 // when the sign turns over (F1 happens off screen, between the two places: it comes back down as the date)
+const SWAP = 9.6 // (the couple, 17 Nov night: the date goes up at DATE_UP, THEN dusk falls and the lights come on, THEN the RSVP board comes down)
+const DATE_UP = 9.0 // the date board has lifted out of the frame (F2 - 0.6 .. F2 - 0.15); the RSVP board comes down from F2 - 0.05
+const F1 = 7.0, F2 = 11.0 // when the sign turns over (F1 happens off screen, between the two places: it comes back down as the date)
 
 // Hornbill perches, in % of the stage (x of width, y of height). Branches are laid out from the same numbers.
 // x is fixed; y is worked out by perches() below, because the branches and the bird are sized by the stage WIDTH
@@ -458,24 +459,25 @@ function Animated() {
         .fromTo('.resort', { y: () => RESORT_LOW * sh() }, { y: 0, duration: 1.0, ease: 'sine.inOut', immediateRender: true }, 6.6)
         .set('.riverside', { visibility: 'hidden' }, 7.56)
         // THE RESORT · the jeep rolls the last few yards and stops by the garlanded gate (no bounce: it is parked)…
-        .fromTo('.jeep2', { left: '-95%' }, { left: '11%', duration: 0.75, ease: 'power3.out' }, 7.2)
+        // it stops with the JEEP centred on the screen, not counting the dust cloud behind it (0.5425 = the middle of the jeep's body in its image; the same sum is in v2.css)
+        .fromTo('.jeep2', { left: '-95%' }, { left: () => { const j = root.current!.querySelector<HTMLElement>('.jeep2')!; return (j.parentElement as HTMLElement).clientWidth * 0.5 - j.offsetWidth * 0.5425 }, duration: 0.75, ease: 'power3.out' }, 7.2)
         // …and the sign comes back down, turned over meanwhile (F1): the date, the place, Add to calendar
         .fromTo('.palash-grp', { y: () => DIR * 1.2 * sh() }, { y: 0, duration: 0.55, ease: 'power2.out', immediateRender: false }, 7.7)
         // light: afternoon → golden hour → dusk
         .fromTo('.tint', { opacity: 0 }, { opacity: 1, duration: 3.6 }, 2.9)
-        .fromTo('.dusk', { opacity: 0 }, { opacity: 1, duration: 1.1 }, 9.0)
+        .fromTo('.dusk', { opacity: 0 }, { opacity: 1, duration: 1.0 }, DATE_UP + 0.45)
         // the house lights come on one after another as dusk deepens, then the lamps outside (light, so it may fade in)
         // (the couple, 17 Nov: "a small gap between the lights coming on and then the next board": every light is on by
         // about 9.75, the date board only starts to lift at F2 - 0.6 = 10.0)
-        .fromTo('.rwin', { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.25, stagger: 0.03 }, 9.05)
-        .fromTo('.rlamp', { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.25, stagger: 0.015 }, 9.3)
+        .fromTo('.rwin', { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.25, stagger: 0.03 }, DATE_UP + 0.6)
+        .fromTo('.rlamp', { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.25, stagger: 0.015 }, DATE_UP + 0.9)
         // THE CLOSING PICTURE · as the sign turns over into the RSVP board (F2) the whole resort settles a little lower,
         // so the lit villa and the parked jeep stand below the board instead of behind it
         // (not with rocks: the tall stone stands at the bottom, so the villa is left where it is, above the stone)
         .to('.resort', { y: () => (ROCK ? 0 : RESORT_END) * sh(), duration: 0.7, ease: 'sine.inOut' }, F2 - 0.35)
         .set({}, {}, U)
       if (!ROCK) tl
-        .to('.palash-grp', { y: () => -1.2 * sh(), duration: 0.45, ease: 'power2.in' }, F2 - 0.6)
+        .to('.palash-grp', { y: () => -1.2 * sh(), duration: 0.45, ease: 'power2.in' }, DATE_UP)
         .fromTo('.palash-grp', { y: () => -1.2 * sh() }, { y: 0, duration: 0.55, ease: 'power2.out', immediateRender: false }, F2 - 0.05)
 
       // hornbill: seated on the forest branch from the first frame (behind the leaves). As the forest sinks it flies on
@@ -501,7 +503,8 @@ function Animated() {
         // round and settles on the RIGHT of the date board as that comes down
         fly([WAIT, { x: 28, y: 40 }, { x: 46, y: 28 }, { x: 68, y: 34 }, { x: 86, y: 40 }, { x: 86, y: 25 }, P.palash], 6.25, 2.0)
         // the date board goes up: it rises off it, crosses the sky above, and comes down on the LEFT of the RSVP board
-        fly([P.palash, ...HOP, P.board], F2 - 0.65, 1.15)
+        // (it stays in the air, circling over the garden, while dusk falls and the lights come on)
+        fly([P.palash, HOP[0], { x: 40, y: 30 }, { x: 24, y: 42 }, { x: 44, y: 50 }, { x: 68, y: 44 }, { x: 76, y: 30 }, HOP[1], HOP[2], P.board], DATE_UP - 0.05, F2 + 0.5 - (DATE_UP - 0.05))
       }
 
       // three curtains, one after another, each parting to the LEFT and RIGHT: we push through the near one, then the
