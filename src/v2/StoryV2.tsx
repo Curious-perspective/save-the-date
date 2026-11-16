@@ -22,7 +22,7 @@ if (import.meta.env.DEV) Object.assign(window, { gsap, ScrollTrigger })
   7.5–8.25 the jeep rolls to a stop by the garlanded gate; the sign comes back down with the date
   9.0–10.6 dusk falls; the hornbill brings the scroll; the sign turns over into the RSVP board
 */
-const U = 10.6
+const U = 11.2
 const RESORT_END = 0.11 // for the closing picture the resort settles this much lower (in stage heights), so the lit villa stands clear below the RSVP board
 const RESORT_LOW = 0.22 // the resort waits this much lower (in stage heights), wholly hidden behind the riverside, and rises into place as the riverside sinks
 // While we are in the forest, the next scene (the riverside painting) waits this far below its place, in stage heights,
@@ -38,7 +38,7 @@ const BEATS_T = [0, 1.8, 4.15, 5.8, 8.6, U] // in TIMELINE time (the rock option
 // lot of scrolls even after the jeep has moved away"). Rather than renumber every later beat, the scroll is measured
 // on a STORY clock that runs through that idle stretch [IDLE_AT, IDLE_AT + IDLE_LEN] in IDLE_W instead of IDLE_LEN.
 // toT() turns story time into timeline time, toS() the other way. Everything the scroll driver does is in story time.
-const IDLE_AT = 4.95, IDLE_LEN = 1.3
+const IDLE_AT = 5.45, IDLE_LEN = 0.8
 const IDLE_W = /[?&]b=rock\b/.test(location.search) ? IDLE_LEN : 0.15
 const toT = (s: number) => (s <= IDLE_AT ? s : s <= IDLE_AT + IDLE_W ? IDLE_AT + (s - IDLE_AT) * (IDLE_LEN / IDLE_W) : s + IDLE_LEN - IDLE_W)
 const toS = (t: number) => (t <= IDLE_AT ? t : t <= IDLE_AT + IDLE_LEN ? IDLE_AT + (t - IDLE_AT) * (IDLE_W / IDLE_LEN) : t - IDLE_LEN + IDLE_W)
@@ -53,8 +53,8 @@ const BEATS = BEATS_T.filter((b) => IDLE_W === IDLE_LEN || b <= IDLE_AT || b >= 
 const BOARD = (/[?&]b=(wood|paper|rock)\b/.exec(location.search)?.[1] ?? 'paper') as 'wood' | 'paper' | 'rock'
 const ROCK = BOARD === 'rock'
 const DIR = ROCK ? 1 : -1 // the carrier leaves upwards (hung) or downwards (a rock sinking)
-const SWAP = 9.9 // the date board has lifted out of the frame (F2 - 0.6 .. F2 - 0.15); the RSVP board comes down from F2 - 0.05
-const F1 = 7.0, F2 = 10.0 // when the sign turns over (F1 happens off screen, between the two places: it comes back down as the date)
+const SWAP = 10.5 // the date board has lifted out of the frame (F2 - 0.6 .. F2 - 0.15); the RSVP board comes down from F2 - 0.05
+const F1 = 7.0, F2 = 10.6 // when the sign turns over (F1 happens off screen, between the two places: it comes back down as the date)
 
 // Hornbill perches, in % of the stage (x of width, y of height). Branches are laid out from the same numbers.
 // x is fixed; y is worked out by perches() below, because the branches and the bird are sized by the stage WIDTH
@@ -70,7 +70,7 @@ const AIR3 = [{ x: 78, y: 9.7 }] // the hop from the palash to the board
 // 0.08 W below its feet. Branch tops and sizes are the ones in v2.css (.branchA, .palash, .sign-turn/.board).
 // the short turn it makes just above the boards while the date board goes up and the RSVP board comes down; kept only
 // a little above the board's top edge, because on a tall phone the frame's top is close above it (set in perches())
-const HOP = [{ x: 66, y: 20 }, { x: 50, y: 19 }, { x: 34, y: 20 }]
+const HOP = [{ x: 66, y: 20 }, { x: 46, y: 19 }, { x: 28, y: 20 }]
 const perches = (W: number, H: number, crop = 0) => {
   if (!W || !H) return // no size yet (a tab that is not showing): keep the last good numbers
   // crop = px of the stage hidden above the screen on tall phones; the sign group (.palash-grp) starts below it
@@ -87,8 +87,8 @@ const perches = (W: number, H: number, crop = 0) => {
     const jx = (W - aw) / 2 + 0.1492 * aw, jtop = H - 0.135 * ah - jh
     P.jeep.x = ((jx + 0.86 * jw) / W) * 100; P.jeep.y = ((jtop + 0.37 * jh) / H) * 100 + tail * k }
   // PAPER has no branch: the hornbill sits on the card's own top edge, by its right-hand flowers
-  // (the couple, 17 Nov: not on the right edge) it sits in the MIDDLE of the board's top edge, between the two flower sprays
-  if (BOARD === 'paper') { P.palash.x = 50; P.palash.y = P.board.y; P.board.x = 50; AIR3[0].x = 60; AIR3[0].y = P.board.y - 4 }
+  // (the couple, 17 Nov) not the same side both times: on the RIGHT of the date board, then on the LEFT of the RSVP board
+  if (BOARD === 'paper') { P.palash.x = 82; P.palash.y = P.board.y; P.board.x = 15; AIR3[0].x = 60; AIR3[0].y = P.board.y - 4 }
   HOP[0].y = P.board.y - 1.5; HOP[1].y = P.board.y - 2.5; HOP[2].y = P.board.y - 1.5
   if (ROCK) {
     // feet on the stone: the rocks stand on the bottom edge (.b-rock in v2.css: wide 110cqw, its foot 1% above the
@@ -403,11 +403,11 @@ function Animated() {
       }
       gsap.set(flip, { rotationY: 180 })
 
-      const fly = (pts: { x: number; y: number }[], at: number, dur: number) => tl!
+      const fly = (pts: { x: number; y: number }[], at: number, dur: number, land = true) => tl!
         .set(bird, { perched: 0 }, at)
         // lazy: false · on a big jump (RSVP button, reload at the end) a lazy tween writes the proxy AFTER onUpdate has drawn the bird
         .to(bird, { motionPath: { path: pts, curviness: 1.25 }, duration: dur, ease: 'sine.inOut', lazy: false }, at)
-        .set(bird, { perched: 1 }, at + dur)
+        .set(bird, { perched: land ? 1 : 0 }, at + dur)
 
       // ---- the story (full-height groups move by y in px of the stage height; yPercent on them got baked into px after pin refreshes)
       const sh = () => stage.current!.clientHeight
@@ -442,7 +442,7 @@ function Animated() {
         .set('.L-forest, .L-grass, .L-flies, .branchA', { visibility: 'hidden' }, 3.15)
         // THE ROAD · the jeep comes along, pauses, and drives on out of the frame towards the wedding…
         .fromTo('.jeep', { left: '-72%' }, { left: '14.92%', duration: 1.1, ease: 'power2.out' }, 2.95)
-        .fromTo('.jeep', { left: '14.92%' }, { left: '104%', duration: 0.6, ease: 'power2.in', immediateRender: false }, 4.3)
+        .fromTo('.jeep', { left: '14.92%' }, { left: '104%', duration: 1.1, ease: 'power2.in', immediateRender: false }, 4.3)
         // …and only once it has gone does the palash branch lower the wooden sign with the two families
         .fromTo('.palash-grp', { y: () => DIR * 1.2 * sh() }, { y: 0, duration: 0.55, ease: 'power2.out' }, ROCK ? 4.9 : 3.6)
         // ROAD → RESORT · the families have been read (0.9): the sign lifts away and we go on. The riverside sinks out
@@ -461,8 +461,10 @@ function Animated() {
         .fromTo('.tint', { opacity: 0 }, { opacity: 1, duration: 3.6 }, 2.9)
         .fromTo('.dusk', { opacity: 0 }, { opacity: 1, duration: 1.1 }, 9.0)
         // the house lights come on one after another as dusk deepens, then the lamps outside (light, so it may fade in)
-        .fromTo('.rwin', { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.3, stagger: 0.05 }, 9.2)
-        .fromTo('.rlamp', { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.3, stagger: 0.04 }, 9.55)
+        // (the couple, 17 Nov: "a small gap between the lights coming on and then the next board": every light is on by
+        // about 9.75, the date board only starts to lift at F2 - 0.6 = 10.0)
+        .fromTo('.rwin', { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.25, stagger: 0.03 }, 9.05)
+        .fromTo('.rlamp', { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.25, stagger: 0.015 }, 9.3)
         // THE CLOSING PICTURE · as the sign turns over into the RSVP board (F2) the whole resort settles a little lower,
         // so the lit villa and the parked jeep stand below the board instead of behind it
         // (not with rocks: the tall stone stands at the bottom, so the villa is left where it is, above the stone)
@@ -486,12 +488,15 @@ function Animated() {
         // forest branch → as the forest sinks it glides a slow loop over the river and lands ON THE BONNET of the jeep
         // just as the jeep stops at the centre
         fly([P.forest, { x: 60, y: 34 }, { x: 38, y: 32 }, { x: 28, y: 46 }, { x: 46, y: 58 }, { x: 70, y: 60 }, P.jeep], 2.15, 1.9)
-        // the jeep drives away: it hops up onto the families board
-        fly([P.jeep, { x: 82, y: 52 }, { x: 84, y: 34 }, { x: 70, y: 22 }, P.palash], 4.3, 0.6)
-        // the board lifts and the river scene gives way to the resort: it circles, in view all the while, and settles
-        // on the date board as that comes down
-        fly([P.palash, { x: 72, y: 26 }, { x: 46, y: 30 }, { x: 28, y: 42 }, { x: 44, y: 54 }, { x: 70, y: 52 }, { x: 84, y: 40 }, { x: 72, y: 23 }, P.palash], 6.3, 1.95)
-        // the date board goes up: it rises off it, turns in the sky above, and comes down onto the RSVP board
+        // (the couple, 17 Nov) in the road scene it sits ONLY on the jeep, never on the families board, and stays on the
+        // bonnet until the jeep drives off. It cannot ride out with the jeep (it must never leave the screen), so as
+        // the jeep pulls away it lifts off and waits in the air over the river…
+        const WAIT = { x: 34, y: 52 }
+        fly([P.jeep, { x: 80, y: 57 }, { x: 58, y: 52 }, WAIT], 4.35, 1.05, false)
+        // …(it hovers there through the hurried stretch) and when the river scene gives way to the resort it circles
+        // round and settles on the RIGHT of the date board as that comes down
+        fly([WAIT, { x: 28, y: 40 }, { x: 46, y: 28 }, { x: 68, y: 34 }, { x: 86, y: 40 }, { x: 86, y: 25 }, P.palash], 6.25, 2.0)
+        // the date board goes up: it rises off it, crosses the sky above, and comes down on the LEFT of the RSVP board
         fly([P.palash, ...HOP, P.board], F2 - 0.65, 1.15)
       }
 
@@ -554,7 +559,7 @@ function Animated() {
         if (now) { gsap.killTweensOf(head); setS(want) } else gsap.to(head, { s: want, duration: 1, ease: 'expo', overwrite: true, onUpdate: () => { tlNow.time(toT(head.s)) } })
         show(want)
       }
-      st = ScrollTrigger.create({ id: 'v2', trigger: root.current, start: 'top top', end: () => '+=' + innerHeight * 9.45 * (US / U), pin: true, onUpdate: () => drive() })
+      st = ScrollTrigger.create({ id: 'v2', trigger: root.current, start: 'top top', end: () => '+=' + innerHeight * 0.8915 * US, pin: true, onUpdate: () => drive() })
       const gates = (t: number) => { lo = Math.max(0, ...BEATS.filter((b) => b < t - 0.001)); hi = Math.min(US, ...BEATS.filter((b) => b > t + 0.001)) }
       const settle = () => {
         n.settle++
