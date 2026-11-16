@@ -251,7 +251,11 @@ const FLIES = Array.from({ length: 14 }, (_, i) => ({ left: `${8 + ((i * 53) % 8
 const RWINDOWS = [[24.2, 56.6, 3.2, 3.6], [32.2, 56.6, 3.2, 3.6], [40.2, 56.6, 3.2, 3.6], [47.6, 56.6, 3, 3.6], [23, 47.2, 3, 3], [31.2, 47.2, 3, 3], [38.6, 47.2, 2.8, 3], [12.8, 47.4, 2.6, 3], [6.4, 55.6, 2.4, 3.4], [12.2, 55.6, 2.4, 3.4], [71.8, 47.5, 4.4, 1.6]]
 // lamps [x, y]: five diyas along the upper balustrade, one on each gate post, four down the path, three on the river
 const RLAMPS = [[17.5, 49.3], [26.8, 49.6], [36, 49.9], [44.5, 50.2], [52, 50.5], [56.5, 66.9], [72.9, 67.3], [61.5, 74.6], [68.8, 75.2], [60.5, 78.2], [70.6, 78.8], [86, 57.2], [92.5, 61.2], [88.5, 64.6]]
-const PETALS = Array.from({ length: 13 }, (_, i) => `/story/petals/p${String(i + 1).padStart(2, '0')}.webp`)
+// AFTER A "YES" (the couple, 17 Nov night: no petals): strings of small lights come on one by one along the villa's
+// eave, its balcony rail and the garland between the gate posts, and stay on. In % of the resort painting.
+const strand = (x0: number, y0: number, x1: number, y1: number, n: number, swags = 0, sag = 0) =>
+  Array.from({ length: n }, (_, i) => { const t = i / (n - 1); return [x0 + (x1 - x0) * t, y0 + (y1 - y0) * t + sag * Math.abs(Math.sin(t * Math.PI * swags))] })
+const STRINGS = [...strand(16.5, 44.6, 54.3, 46.5, 17, 4, 0.45), ...strand(17, 48.3, 52.3, 49.6, 13), ...strand(57.6, 68.2, 71.8, 68.4, 8, 1, 2)]
 
 
 const cal = content.calendar
@@ -681,6 +685,19 @@ function Animated() {
         const path = a === 'yes' ? [from, { x: 34, y: from.y + 10 }, { x: 62, y: bonnet.y - 22 }, { x: bonnet.x + 4, y: bonnet.y - 10 }, bonnet]
           : a === 'no' ? [from, { x: 38, y: from.y + 5 }, { x: 78, y: from.y - 2 }, { x: 135, y: from.y - 10 }]
           : [from, { x: 50, y: P.board.y + 14 }, P.board]
+        // the celebration: the string lights come on one after another, then fireflies rise all around for a few
+        // seconds and thin out again (light, so it may fade). Starting over puts the lights out.
+        gsap.killTweensOf('.slight')
+        if (a === 'yes') {
+          gsap.to('.slight', { autoAlpha: 1, duration: 0.3, stagger: 0.045, delay: 0.3 })
+          for (let i = 0; i < 30; i++) {
+            const f = document.createElement('i'); f.className = 'fly rise'; f.style.left = `${4 + Math.random() * 92}%`; f.style.top = `${58 + Math.random() * 38}%`; st.appendChild(f)
+            gsap.timeline({ delay: 1.6 + Math.random() * 1.6, onComplete: () => f.remove() })
+              .to(f, { y: -(0.06 + Math.random() * 0.1) * s.height, x: (Math.random() - 0.5) * 60, duration: 5 + Math.random() * 3, ease: 'sine.inOut' }, 0)
+              .fromTo(f, { opacity: 0 }, { opacity: 1, duration: 0.8 }, 0)
+              .to(f, { opacity: 0, duration: 1.4 }, '>2.4')
+          }
+        } else gsap.set('.slight', { autoAlpha: 0 })
         ending?.kill()
         ending = gsap.timeline({ onUpdate: render })
           .set(bird, { perched: 0 })
@@ -698,18 +715,6 @@ function Animated() {
     })
   }, { scope: root })
 
-  // marigold and rose petals over the water after a "yes"
-  const shower = () => {
-    if (matchMedia('(prefers-reduced-motion: reduce)').matches || !stage.current) return
-    const st = stage.current, { width, height } = st.getBoundingClientRect()
-    for (let i = 0; i < 22; i++) {
-      const img = document.createElement('img'); img.src = PETALS[i % PETALS.length]; img.alt = ''; img.className = 'petal'; st.appendChild(img)
-      const x0 = Math.random() * width
-      gsap.fromTo(img, { x: x0, y: -60 - Math.random() * height * 0.3, rotation: Math.random() * 360 },
-        { x: x0 + (Math.random() - 0.5) * 120, y: height * (0.75 + Math.random() * 0.2), rotation: `+=${200 + Math.random() * 300}`, duration: 3 + Math.random() * 2.5, ease: 'sine.in', delay: Math.random() * 0.8 })
-    }
-  }
-
   const fam = content.families
   return (
     <section ref={root} className="v2" aria-label="Shreya and Akshay are getting married">
@@ -725,6 +730,7 @@ function Animated() {
               <img src="/v2/resort/scene.webp" alt="" fetchPriority="low" />
               {RWINDOWS.map(([x, y, w, h], i) => <i key={i} className="rwin" style={{ left: `${x}%`, top: `${y}%`, width: `${w}%`, height: `${h}%` }} />)}
               {RLAMPS.map(([x, y], i) => <i key={i} className="fly rlamp" style={{ left: `${x}%`, top: `${y}%`, animationDelay: `${-(i * 0.83) % 6}s` }} />)}
+              {STRINGS.map(([x, y], i) => <i key={i} className="slight" style={{ left: `${x}%`, top: `${y}%` }} />)}
               <img className="jeep2" src="/story/jeep.webp" alt="Shreya and Akshay's jeep, parked at the gate" fetchPriority="low" />
             </div>
           </div>
@@ -756,7 +762,7 @@ function Animated() {
                   </div>
                 </details>
               </div>
-              <div className="board plank plank-board" id="rsvp"><RsvpBoard onSent={(a) => { if (a === 'yes') shower(); dispatchEvent(new CustomEvent('v2rsvp', { detail: a })) }} /></div>
+              <div className="board plank plank-board" id="rsvp"><RsvpBoard onSent={(a) => dispatchEvent(new CustomEvent('v2rsvp', { detail: a }))} /></div>
             </div>
           </div>
           <div className="tint" aria-hidden="true" />
