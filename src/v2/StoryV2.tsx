@@ -32,7 +32,19 @@ const FAR_LOW = 0.36
 // The BEATS: where the story comes to rest and holds until the guest scrolls again. One gesture never goes past the
 // next one. 0 "You are invited" · 1.8 both names joined on their clouds · 4.15 the jeep at rest on the road ·
 // 5.8 the families sign · 8.6 the resort with the date sign · U the RSVP board.
-const BEATS = [0, 1.8, 4.15, 5.8, 8.6, U]
+const BEATS_T = [0, 1.8, 4.15, 5.8, 8.6, U] // in TIMELINE time (the rock option still rests at 5.8: its families stone rises after the jeep has gone)
+// THE STORY CLOCK. After the jeep drives away (timeline 4.9) nothing moved until the board lifted at 6.35: on a phone
+// that was more than a screen of scrolling with a still picture (the couple, 17 Nov: "the board doesn't move after a
+// lot of scrolls even after the jeep has moved away"). Rather than renumber every later beat, the scroll is measured
+// on a STORY clock that runs through that idle stretch [IDLE_AT, IDLE_AT + IDLE_LEN] in IDLE_W instead of IDLE_LEN.
+// toT() turns story time into timeline time, toS() the other way. Everything the scroll driver does is in story time.
+const IDLE_AT = 4.95, IDLE_LEN = 1.3
+const IDLE_W = /[?&]b=rock\b/.test(location.search) ? IDLE_LEN : 0.15
+const toT = (s: number) => (s <= IDLE_AT ? s : s <= IDLE_AT + IDLE_W ? IDLE_AT + (s - IDLE_AT) * (IDLE_LEN / IDLE_W) : s + IDLE_LEN - IDLE_W)
+const toS = (t: number) => (t <= IDLE_AT ? t : t <= IDLE_AT + IDLE_LEN ? IDLE_AT + (t - IDLE_AT) * (IDLE_W / IDLE_LEN) : t - IDLE_LEN + IDLE_W)
+const US = toS(U) // the story's length
+// beats in story time; a beat inside the hurried stretch is dropped
+const BEATS = BEATS_T.filter((b) => IDLE_W === IDLE_LEN || b <= IDLE_AT || b >= IDLE_AT + IDLE_LEN).map(toS)
 // WHAT CARRIES THE WORDS (families · date · RSVP): three options for the couple to compare, by URL `?b=wood|paper|rock`.
 // wood = the wooden sign on ropes (as before) · paper = an ivory card on gold cords, same branch, same turn-over ·
 // rock = painted river boulders standing in the scene: they RISE from below the frame instead of hanging, and the
@@ -488,7 +500,9 @@ function Animated() {
       // (`settle()`), the real scroll position is quietly put back where the story is (invisible: pinned), a rest close
       // to a beat glides onto it, and the gates move on, so the next gesture carries on from there.
       const tlNow = tl
-      const AFTER = [0, 0.2, 0.15, 0.5, 0.4, 0] // the still stretch after each beat: resting anywhere in it counts as resting on the beat
+      const head = { s: 0 } // where the story is, in story time; the timeline is always at toT(head.s)
+      const setS = (v: number, suppress = false) => { head.s = v; tlNow.time(toT(v), suppress) }
+      const AFTER = BEATS.length === 6 ? [0, 0.2, 0.15, 0.5, 0.4, 0] : [0, 0.2, 0.15, 0.4, 0] // the still stretch after each beat: resting anywhere in it counts as resting on the beat
       const CATCH = 0.35 // resting this close before a beat glides onto it
       // `?gates=0`: no beats, the story simply follows the scroll (to review on a phone where the gates misbehave).
       // `?debug=1`: a small readout of the scroll driver's state, for diagnosing a real phone from a screenshot.
@@ -497,10 +511,10 @@ function Animated() {
       let lo = 0, hi = BEATS[1], free = false, touching = false
       let st: ScrollTrigger | undefined // created below, once drive() exists
       const typing = () => { const a = document.activeElement; return !!a && !!root.current?.contains(a) && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName) }
-      const at = () => (st ? st.progress * U : 0) // where the scroll is, in timeline units (ScrollTrigger calls onUpdate once while it is still being created)
+      const at = () => (st ? st.progress * US : 0) // where the scroll is, in timeline units (ScrollTrigger calls onUpdate once while it is still being created)
       const show = (t: number) => { // side effects that follow the STORY's position, not the raw scroll
-        root.current?.classList.toggle('board-live', t > 0.985 * U)
-        dispatchEvent(new CustomEvent('v2progress', { detail: t / U }))
+        root.current?.classList.toggle('board-live', t > 0.985 * US)
+        dispatchEvent(new CustomEvent('v2progress', { detail: t / US }))
       }
       const drive = (now = false) => {
         if (typing()) return // the keyboard opening or a field scrolling into view must not move the story
@@ -508,11 +522,11 @@ function Animated() {
         // reads as 1, and the story jumped to the RSVP (and the later refresh scrolled the page there). Wait for a real size.
         if (!st || st.end - st.start < 10) return
         const want = free || NOGATES ? at() : gsap.utils.clamp(lo, hi, at())
-        if (now) { gsap.killTweensOf(tlNow); tlNow.time(want) } else gsap.to(tlNow, { time: want, duration: 1, ease: 'expo', overwrite: true })
+        if (now) { gsap.killTweensOf(head); setS(want) } else gsap.to(head, { s: want, duration: 1, ease: 'expo', overwrite: true, onUpdate: () => { tlNow.time(toT(head.s)) } })
         show(want)
       }
-      st = ScrollTrigger.create({ id: 'v2', trigger: root.current, start: 'top top', end: () => '+=' + innerHeight * 9.45, pin: true, onUpdate: () => drive() })
-      const gates = (t: number) => { lo = Math.max(0, ...BEATS.filter((b) => b < t - 0.001)); hi = Math.min(U, ...BEATS.filter((b) => b > t + 0.001)) }
+      st = ScrollTrigger.create({ id: 'v2', trigger: root.current, start: 'top top', end: () => '+=' + innerHeight * 9.45 * (US / U), pin: true, onUpdate: () => drive() })
+      const gates = (t: number) => { lo = Math.max(0, ...BEATS.filter((b) => b < t - 0.001)); hi = Math.min(US, ...BEATS.filter((b) => b > t + 0.001)) }
       const settle = () => {
         n.settle++
         if (NOGATES) return
@@ -527,10 +541,10 @@ function Animated() {
       }
       // put the real scroll position where the story is (invisible: the stage is pinned). It fires a scroll event, so
       // drive() and one more (idle) settle() follow.
-      const sync = (t: number) => { n.sync++; if (!st) return; const y = st.start + (t / U) * (st.end - st.start); if (Math.abs(st.scroll() - y) > 2) st.scroll(y) }
+      const sync = (t: number) => { n.sync++; if (!st) return; const y = st.start + (t / US) * (st.end - st.start); if (Math.abs(st.scroll() - y) > 2) st.scroll(y) }
       // while a guest types, the browser may scroll the page to bring the field above the keyboard; the story ignores
       // that (typing()), and when the field is left the scroll is put back, so the RSVP board never slides away
-      const leftField = () => sync(tlNow.time())
+      const leftField = () => sync(head.s)
       root.current!.addEventListener('focusout', leftField)
       // "the scrolling has stopped" = no scroll event for 0.2s (a plain timer, not GSAP's ticker, which browsers throttle)
       let timer = 0
@@ -545,7 +559,7 @@ function Animated() {
       let arrived = 0, gateAt: number | null = null, lastWheel = 0
       const watch = window.setInterval(() => {
         const a = at(), bound = a > hi + 0.001 ? hi : a < lo - 0.001 ? lo : null
-        if (bound !== null && Math.abs(tlNow.time() - bound) < 0.03) { arrived ||= performance.now(); if (performance.now() - arrived > HOLD) gateAt = bound }
+        if (bound !== null && Math.abs(head.s - bound) < 0.03) { arrived ||= performance.now(); if (performance.now() - arrived > HOLD) gateAt = bound }
         else { arrived = 0; gateAt = null }
       }, 80)
       const open = () => { if (gateAt === null || free || typing()) return; const t = gateAt; gateAt = null; arrived = 0; n.open++; gates(t); sync(t) }
@@ -565,7 +579,7 @@ function Animated() {
         dbg = document.body.appendChild(Object.assign(document.createElement('pre'), { style: 'position:fixed;z-index:999;left:4px;top:4px;margin:0;padding:6px 8px;font:11px/1.35 ui-monospace,Menlo,monospace;color:#fff;background:rgba(0,0,0,.72);border-radius:6px;pointer-events:none;white-space:pre' }))
         addEventListener('error', (e) => { n.err = String(e.message).slice(0, 60) })
         dbgTimer = window.setInterval(() => {
-          dbg!.textContent = `story ${tlNow.time().toFixed(2)}  scroll ${at().toFixed(2)}\ngate ${lo}-${hi}  ready ${gateAt ?? '-'}\ny ${Math.round(scrollY)} / ${Math.round(document.documentElement.scrollHeight - innerHeight)}  h ${innerHeight}\npin ${st ? Math.round(st.start) + '-' + Math.round(st.end) : '-'}\ntouch ${touching ? 'DOWN' : 'up'}  typing ${typing() ? 'YES' : 'no'}  free ${free ? 'YES' : 'no'}\nscroll ${n.scroll} down ${n.down} up ${n.up}\nsettle ${n.settle} open ${n.open} sync ${n.sync}\n${n.err}`
+          dbg!.textContent = `story ${head.s.toFixed(2)}  scroll ${at().toFixed(2)}\ngate ${lo}-${hi}  ready ${gateAt ?? '-'}\ny ${Math.round(scrollY)} / ${Math.round(document.documentElement.scrollHeight - innerHeight)}  h ${innerHeight}\npin ${st ? Math.round(st.start) + '-' + Math.round(st.end) : '-'}\ntouch ${touching ? 'DOWN' : 'up'}  typing ${typing() ? 'YES' : 'no'}  free ${free ? 'YES' : 'no'}\nscroll ${n.scroll} down ${n.down} up ${n.up}\nsettle ${n.settle} open ${n.open} sync ${n.sync}\n${n.err}`
         }, 150)
       }
       const rootEl = root.current!
@@ -573,11 +587,11 @@ function Animated() {
       // `invalidateOnRefresh` did when ScrollTrigger owned the timeline (same steps as ScrollTrigger's own)
       let keep = 0
       const before = () => {
-        keep = tlNow.time(); gsap.killTweensOf(tlNow)
+        keep = head.s; gsap.killTweensOf(head)
         tlNow.revert({ kill: false }).invalidate()
         tlNow.getChildren(true, true, false).forEach((c) => c.vars.immediateRender && c.render(0, true, true))
       }
-      const after = () => { if (keep < 2.15) { bird.x = P.forest.x; bird.y = P.forest.y } /* not flown yet: sit on the forest branch as now measured */; if (st && st.scroll() < 2 && !typing()) keep = Math.min(keep, 0) /* still at the very top: stay on the first screen */; gsap.killTweensOf(tlNow); tlNow.time(keep, true); render(); gates(keep); sync(keep) } // the story stays where it was; the scroll is moved to match the new length
+      const after = () => { if (keep < 2.15) { bird.x = P.forest.x; bird.y = P.forest.y } /* not flown yet: sit on the forest branch as now measured */; if (st && st.scroll() < 2 && !typing()) keep = Math.min(keep, 0) /* still at the very top: stay on the first screen */; gsap.killTweensOf(head); setS(keep, true); render(); gates(keep); sync(keep) } // the story stays where it was; the scroll is moved to match the new length
       ScrollTrigger.addEventListener('refreshInit', before)
       ScrollTrigger.addEventListener('refresh', after)
       // `ignoreMobileResize` skips height-only window resizes (toolbars sliding), but on a phone the stage often gets its
@@ -589,11 +603,11 @@ function Animated() {
       ro.observe(stage.current!)
       // a reload always opens the invitation from the top (a restored scroll position would otherwise be stopped at the first gate)
       history.scrollRestoration = 'manual'
-      free = true; drive(true); free = false; gates(tlNow.time())
+      free = true; drive(true); free = false; gates(head.s)
       if (import.meta.env.DEV) {
         // preview aid: v2go(t) puts the story at t at once, through the gates (the old `st.animation` helpers still read the timeline)
         Object.assign(st, { animation: tlNow })
-        Object.assign(window, { v2tl: tlNow, v2go: (t: number) => { free = true; st.scroll(st.start + (t / U) * (st.end - st.start)); ScrollTrigger.update(); drive(true); free = false; gates(t); return tlNow.time() }, v2gates: () => [lo, hi] })
+        Object.assign(window, { v2tl: tlNow, v2go: (t: number) => { t = toS(t); /* v2go takes TIMELINE time, as before */ free = true; st.scroll(st.start + (t / US) * (st.end - st.start)); ScrollTrigger.update(); drive(true); free = false; gates(t); return tlNow.time() }, v2gates: () => [lo, hi] })
       }
 
       return () => {
