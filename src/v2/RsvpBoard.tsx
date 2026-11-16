@@ -94,7 +94,6 @@ export default function RsvpBoard({ onSent }: { onSent: (a: 'yes' | 'no' | null)
           <div className="board-nav"><button type="button" className="board-link" onClick={() => { setError(''); setStep(2) }}>Back</button><button type="submit" className="board-btn board-go" disabled={sending}>{sending ? 'Sending…' : 'Send RSVP'}</button></div>
         </form>
       )}
-      <div className="board-dots" aria-hidden="true">{[1, 2, 3].map((n) => <i key={n} className={n === step ? 'on' : ''} />)}</div>
     </div>
   )
 }
