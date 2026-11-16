@@ -41,7 +41,8 @@ const BEATS_T = [0, 1.8, 4.15, 5.8, 8.6, U] // in TIMELINE time (the rock option
 // [start in timeline time, its length there, the length it gets on the story clock]
 //   1.7-2.0  the forest with both names joined, before the clouds leave ("the scroll is just a bit long on the first forest")
 //   5.45-6.25 the families board alone after the jeep has gone (the rock option keeps this one at full length)
-const ZONES: [number, number, number][] = [[1.7, 0.3, 0.1], [5.45, 0.8, /[?&]b=rock\b/.test(location.search) ? 0.8 : 0.15]]
+//   4.05-4.3 the jeep at rest with the hornbill on its bonnet: STRETCHED (the couple: "a slightly longer pause here before the hornbill flies away")
+const ZONES: [number, number, number][] = [[1.7, 0.3, 0.1], [4.05, 0.25, 0.6], [5.45, 0.8, /[?&]b=rock\b/.test(location.search) ? 0.8 : 0.15]]
 const toT = (s: number) => { let off = 0; for (const [a, len, w] of ZONES) { const sa = a - off; if (s <= sa) return s + off; if (s <= sa + w) return a + (s - sa) * (len / w); off += len - w } return s + off }
 const toS = (t: number) => { let off = 0; for (const [a, len, w] of ZONES) { if (t <= a) return t - off; if (t <= a + len) return a - off + (t - a) * (w / len); off += len - w } return t - off }
 const US = toS(U) // the story's length
