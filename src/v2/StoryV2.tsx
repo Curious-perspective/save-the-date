@@ -491,6 +491,9 @@ function Animated() {
       }
       const drive = (now = false) => {
         if (typing()) return // the keyboard opening or a field scrolling into view must not move the story
+        // a page opened in a tab that is not showing yet has no height: the pinned stretch is then 0 long, its progress
+        // reads as 1, and the story jumped to the RSVP (and the later refresh scrolled the page there). Wait for a real size.
+        if (!st || st.end - st.start < 10) return
         const want = free ? at() : gsap.utils.clamp(lo, hi, at())
         if (now) { gsap.killTweensOf(tlNow); tlNow.time(want) } else gsap.to(tlNow, { time: want, duration: 1, ease: 'expo', overwrite: true })
         show(want)
@@ -551,7 +554,7 @@ function Animated() {
         tlNow.revert({ kill: false }).invalidate()
         tlNow.getChildren(true, true, false).forEach((c) => c.vars.immediateRender && c.render(0, true, true))
       }
-      const after = () => { gsap.killTweensOf(tlNow); tlNow.time(keep, true); render(); gates(keep); sync(keep) } // the story stays where it was; the scroll is moved to match the new length
+      const after = () => { if (st && st.scroll() < 2 && !typing()) keep = Math.min(keep, 0) /* still at the very top: stay on the first screen */; gsap.killTweensOf(tlNow); tlNow.time(keep, true); render(); gates(keep); sync(keep) } // the story stays where it was; the scroll is moved to match the new length
       ScrollTrigger.addEventListener('refreshInit', before)
       ScrollTrigger.addEventListener('refresh', after)
       // a reload always opens the invitation from the top (a restored scroll position would otherwise be stopped at the first gate)
