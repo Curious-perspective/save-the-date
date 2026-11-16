@@ -263,7 +263,8 @@ html:has(.v2), html:has(.v2) body { background: #33463A; }
 .b-paper .palash-grp { z-index: 9; }
 .b-paper .plank-fam { left: 9%; right: 9%; }
 .b-paper .plank-date { width: 74%; }
-.b-paper .board { left: 3%; right: 3%; padding: 22px 16px 16px; }
+/* (extra room at the top: the hornbill sits in the middle of the top edge and its tail hangs a little below it) */
+.b-paper .board { left: 3%; right: 3%; padding: 40px 16px 16px; }
 
 /* ROCK · the words on painted river boulders that stand IN the scene, on the bottom edge like a foreground layer
    (they rise from below and sink again: see ROCK in StoryV2.tsx; perches() there mirrors the widths and bottoms

@@ -70,7 +70,7 @@ const AIR3 = [{ x: 78, y: 9.7 }] // the hop from the palash to the board
 // 0.08 W below its feet. Branch tops and sizes are the ones in v2.css (.branchA, .palash, .sign-turn/.board).
 // the short turn it makes just above the boards while the date board goes up and the RSVP board comes down; kept only
 // a little above the board's top edge, because on a tall phone the frame's top is close above it (set in perches())
-const HOP = [{ x: 72, y: 20 }, { x: 58, y: 19 }, { x: 74, y: 20 }]
+const HOP = [{ x: 66, y: 20 }, { x: 50, y: 19 }, { x: 34, y: 20 }]
 const perches = (W: number, H: number, crop = 0) => {
   if (!W || !H) return // no size yet (a tab that is not showing): keep the last good numbers
   // crop = px of the stage hidden above the screen on tall phones; the sign group (.palash-grp) starts below it
@@ -87,7 +87,8 @@ const perches = (W: number, H: number, crop = 0) => {
     const jx = (W - aw) / 2 + 0.1492 * aw, jtop = H - 0.135 * ah - jh
     P.jeep.x = ((jx + 0.86 * jw) / W) * 100; P.jeep.y = ((jtop + 0.37 * jh) / H) * 100 + tail * k }
   // PAPER has no branch: the hornbill sits on the card's own top edge, by its right-hand flowers
-  if (BOARD === 'paper') { P.palash.x = 82; P.palash.y = P.board.y; P.board.x = 89; AIR3[0].x = 86; AIR3[0].y = P.board.y - 4 }
+  // (the couple, 17 Nov: not on the right edge) it sits in the MIDDLE of the board's top edge, between the two flower sprays
+  if (BOARD === 'paper') { P.palash.x = 50; P.palash.y = P.board.y; P.board.x = 50; AIR3[0].x = 60; AIR3[0].y = P.board.y - 4 }
   HOP[0].y = P.board.y - 1.5; HOP[1].y = P.board.y - 2.5; HOP[2].y = P.board.y - 1.5
   if (ROCK) {
     // feet on the stone: the rocks stand on the bottom edge (.b-rock in v2.css: wide 110cqw, its foot 1% above the
@@ -486,10 +487,10 @@ function Animated() {
         // just as the jeep stops at the centre
         fly([P.forest, { x: 60, y: 34 }, { x: 38, y: 32 }, { x: 28, y: 46 }, { x: 46, y: 58 }, { x: 70, y: 60 }, P.jeep], 2.15, 1.9)
         // the jeep drives away: it hops up onto the families board
-        fly([P.jeep, { x: 82, y: 52 }, { x: 84, y: 32 }, P.palash], 4.3, 0.6)
+        fly([P.jeep, { x: 82, y: 52 }, { x: 84, y: 34 }, { x: 70, y: 22 }, P.palash], 4.3, 0.6)
         // the board lifts and the river scene gives way to the resort: it circles, in view all the while, and settles
         // on the date board as that comes down
-        fly([P.palash, { x: 72, y: 26 }, { x: 46, y: 30 }, { x: 28, y: 42 }, { x: 44, y: 54 }, { x: 70, y: 52 }, { x: 84, y: 40 }, P.palash], 6.3, 1.95)
+        fly([P.palash, { x: 72, y: 26 }, { x: 46, y: 30 }, { x: 28, y: 42 }, { x: 44, y: 54 }, { x: 70, y: 52 }, { x: 84, y: 40 }, { x: 72, y: 23 }, P.palash], 6.3, 1.95)
         // the date board goes up: it rises off it, turns in the sky above, and comes down onto the RSVP board
         fly([P.palash, ...HOP, P.board], F2 - 0.65, 1.15)
       }
