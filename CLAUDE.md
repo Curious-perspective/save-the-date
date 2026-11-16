@@ -131,3 +131,4 @@ Brainstorm → spec in `docs/superpowers/specs/` → plan → build. Show visual
   - The story clock now has two hurried stretches (`ZONES`): 1.7-2.0 (the forest with the names, which felt a little long) and 5.45-6.25.
   - Hornbill: the flying pose is scaled 1.17 so its body matches the sitting art; sitting, it faces INTO the picture (right when it sits on the left); it sits on the right of the date board and at the left corner of the RSVP board, clear of the heading.
   - The pastel boards sit higher (margin-top 12%, mirrored in `perches()`), and `RESORT_END` is 0.06 for them, so the parked jeep is whole in the closing picture.
+- 17 Nov (families board, the couple's call): three lines each: name (biggest, 1.55em), "daughter of / son of" (smallest, 0.8em italic), parents (medium, the base size). Board a bit bigger (`.b-paper .plank-fam` 5% side insets, more padding). Wood and rock keep the old two-line layout.

@@ -143,6 +143,7 @@ html:has(.v2), html:has(.v2) body { background: #33463A; }
 .plank-line { margin: 0; font: 500 clamp(0.95rem, 4.6cqw, 1.1rem)/1.3 var(--f-serif); text-wrap: balance; }
 .plank-line b { font: 600 1.18em var(--f-serif); color: #F3DC9A; }
 .plank-line i { color: #D9C6AE; }
+.plank-line span { display: block; }
 .palash { position: absolute; right: -8%; top: 4%; width: 68%; height: auto; }
 .sign-turn { position: absolute; left: 5%; right: 5%; top: 8%; perspective: 900px; }
 .plank-date { width: 84%; margin: 26% auto 0; padding: 4px; display: grid; gap: 4px; transform-origin: 50% 0; pointer-events: auto; visibility: hidden; }
@@ -263,7 +264,11 @@ html:has(.v2), html:has(.v2) body { background: #33463A; }
 .b-paper .plank::after { right: -6.5cqw; background-image: url("/story/flowers/corner-tr.webp"); }
 /* above the dusk and golden-hour overlays (z 8): under them the ivory card and its white fields turned mauve */
 .b-paper .palash-grp { z-index: 9; }
-.b-paper .plank-fam { left: 9%; right: 9%; }
+.b-paper .plank-fam { left: 5%; right: 5%; padding: 34px 18px 26px; gap: 16px; }
+/* the couple, 17 Nov: three lines each. Name biggest, "daughter of / son of" smallest, parents in between */
+.b-paper .plank-fam .plank-line b, .b-paper .plank-fam .plank-line i { display: block; }
+.b-paper .plank-fam .plank-line b { font-size: 1.55em; line-height: 1.1; }
+.b-paper .plank-fam .plank-line i { font-size: 0.8em; line-height: 1.5; }
 .b-paper .plank-date { width: 74%; }
 .b-paper .board { left: 3%; right: 3%; padding: 26px 16px 16px; }
 /* with no branch to hang from, the pastel boards sit higher (perches() in StoryV2.tsx uses the same 12%) */

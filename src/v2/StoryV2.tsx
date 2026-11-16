@@ -303,7 +303,7 @@ function Calm() {
         {sky}
         <div className="scene sB">
           <div className="riverside"><div className="art"><img src="/v2/riverside/scene.webp" alt="" /><img className="jeep" style={{ left: '14.92%' }} src="/story/jeep.webp" alt="Shreya and Akshay's jeep on the riverside road" /></div></div>
-          {sign(<div className="fam-face plank plank-fam">{content.families.map((f) => <p key={f.who} className="plank-line"><b>{f.who}</b> <i>{f.relation}</i><br />{f.parents}</p>)}</div>)}
+          {sign(<div className="fam-face plank plank-fam">{content.families.map((f) => <p key={f.who} className="plank-line"><b>{f.who}</b> <i>{f.relation}</i><span>{f.parents}</span></p>)}</div>)}
           <div className="tint" style={{ opacity: 0.6 }} aria-hidden="true" />
         </div>
         {bird(71.7, 'calc(4% - 2.1cqw)')}
@@ -715,7 +715,7 @@ function Animated() {
             <div className="sign-turn">
               <div className="fam-face plank plank-fam">
                 {fam.map((f) => (
-                  <p key={f.who} className="plank-line"><b>{f.who}</b> <i>{f.relation}</i><br />{f.parents}</p>
+                  <p key={f.who} className="plank-line"><b>{f.who}</b> <i>{f.relation}</i><span>{f.parents}</span></p>
                 ))}
               </div>
               <div className="date-face plank plank-date">
