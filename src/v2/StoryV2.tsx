@@ -55,6 +55,7 @@ const AIR3 = [{ x: 78, y: 9.7 }] // the hop from the palash to the board
 // Feet on the wood. All in stage widths (k = W/H in %): the bird is 30% wide and render() anchors it by its tail tip,
 // 0.08 W below its feet. Branch tops and sizes are the ones in v2.css (.branchA, .palash, .sign-turn/.board).
 const perches = (W: number, H: number, crop = 0) => {
+  if (!W || !H) return // no size yet (a tab that is not showing): keep the last good numbers
   // crop = px of the stage hidden above the screen on tall phones; the sign group (.palash-grp) starts below it
   const k = (W / H) * 100, tail = 0.08, c = (crop / H) * 100, g = 1 - crop / H
   P.forest.y = 38 + (0.104 + tail) * k   // .branchA top 38%, feet on the thick limb 0.104 W below its top
@@ -576,9 +577,16 @@ function Animated() {
         tlNow.revert({ kill: false }).invalidate()
         tlNow.getChildren(true, true, false).forEach((c) => c.vars.immediateRender && c.render(0, true, true))
       }
-      const after = () => { if (st && st.scroll() < 2 && !typing()) keep = Math.min(keep, 0) /* still at the very top: stay on the first screen */; gsap.killTweensOf(tlNow); tlNow.time(keep, true); render(); gates(keep); sync(keep) } // the story stays where it was; the scroll is moved to match the new length
+      const after = () => { if (keep < 2.15) { bird.x = P.forest.x; bird.y = P.forest.y } /* not flown yet: sit on the forest branch as now measured */; if (st && st.scroll() < 2 && !typing()) keep = Math.min(keep, 0) /* still at the very top: stay on the first screen */; gsap.killTweensOf(tlNow); tlNow.time(keep, true); render(); gates(keep); sync(keep) } // the story stays where it was; the scroll is moved to match the new length
       ScrollTrigger.addEventListener('refreshInit', before)
       ScrollTrigger.addEventListener('refresh', after)
+      // `ignoreMobileResize` skips height-only window resizes (toolbars sliding), but on a phone the stage often gets its
+      // real height only AFTER the first measure (17 Nov: every distance worked out from the stage's height, such as how
+      // far the next scene waits below, was computed from a height of ~0 and stayed wrong, so the hills were covered).
+      // The stage is sized in lvh, which toolbars do not change, so re-measure whenever the stage itself changes size.
+      let roT = 0
+      const ro = new ResizeObserver(() => { clearTimeout(roT); roT = window.setTimeout(() => ScrollTrigger.refresh(), 120) })
+      ro.observe(stage.current!)
       // a reload always opens the invitation from the top (a restored scroll position would otherwise be stopped at the first gate)
       history.scrollRestoration = 'manual'
       free = true; drive(true); free = false; gates(tlNow.time())
@@ -589,7 +597,7 @@ function Animated() {
       }
 
       return () => {
-        alive = false; clearTimeout(timer); clearInterval(watch); clearInterval(dbgTimer); dbg?.remove(); removeEventListener('wheel', onWheel); removeEventListener('keydown', open)
+        alive = false; clearTimeout(timer); clearTimeout(roT); ro.disconnect(); clearInterval(watch); clearInterval(dbgTimer); dbg?.remove(); removeEventListener('wheel', onWheel); removeEventListener('keydown', open)
         ScrollTrigger.removeEventListener('refreshInit', place); ScrollTrigger.removeEventListener('refreshInit', before); ScrollTrigger.removeEventListener('refresh', after)
         removeEventListener('scroll', onScroll); removeEventListener('touchstart', down); removeEventListener('touchend', up); removeEventListener('touchcancel', up); removeEventListener('v2free', setFree); rootEl.removeEventListener('focusout', leftField)
       }
