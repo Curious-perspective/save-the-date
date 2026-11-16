@@ -4,22 +4,31 @@ import '../index.css'
 import StoryV2 from './StoryV2'
 
 // (the couple, 17 Nov night: no floating RSVP button; the story ends on the RSVP board)
-// MUSIC (the couple, 17 Nov night): the first 33 s of their chosen track on a loop, quiet. Browsers only allow sound
-// after a tap, so it starts from this button; nothing is downloaded until then. It stops while the page is hidden.
+// MUSIC (the couple, 17 Nov night): the first 33 s of their chosen track on a loop with forest birdsong under it, all
+// the way through. It starts BY ITSELF: we try at once, and because phones refuse sound until the guest has touched
+// the page, we try again on every touch, tap or key until it plays. The button then only turns it off (and on again).
+// The balance is baked into the files (iPhones ignore `volume`). It stops while the page is hidden.
+const GESTURES = ['pointerdown', 'pointerup', 'touchend', 'click', 'keydown'] as const
 function Music() {
   const [on, setOn] = useState(false)
-  const audio = useRef<HTMLAudioElement[] | null>(null) // the music loop and, under it, forest birdsong (60 s loop), both all the way through
-  const toggle = () => {
-    if (!audio.current) audio.current = ['music', 'birds'].map((f) => { const a = new Audio(`${import.meta.env.BASE_URL}v2/${f}.mp3`); a.loop = true; return a }) // the balance is baked into the files (iPhones ignore `volume`)
-    for (const a of audio.current) { if (on) a.pause(); else a.play().catch(() => setOn(false)) }
-    setOn(!on)
-  }
+  const audio = useRef<HTMLAudioElement[]>([])
+  const wanted = useRef(true) // false once the guest has turned it off themselves
+  const play = () => Promise.all(audio.current.map((a) => a.play())).then(() => setOn(true), () => { audio.current.forEach((a) => a.pause()); setOn(false) })
   useEffect(() => {
-    const vis = () => { if (!audio.current || !on) return; for (const a of audio.current) { if (document.hidden) a.pause(); else a.play().catch(() => {}) } }
+    audio.current = ['music', 'birds'].map((f) => { const a = new Audio(`${import.meta.env.BASE_URL}v2/${f}.mp3`); a.loop = true; return a })
+    const tryIt = () => { if (wanted.current && audio.current[0].paused && !document.hidden) play() }
+    const vis = () => { if (document.hidden) audio.current.forEach((a) => a.pause()); else tryIt() }
+    tryIt()
+    GESTURES.forEach((g) => addEventListener(g, tryIt, { passive: true }))
     document.addEventListener('visibilitychange', vis)
-    return () => document.removeEventListener('visibilitychange', vis)
-  }, [on])
-  return <button type="button" className={`music${on ? ' is-on' : ''}`} aria-pressed={on} aria-label={on ? 'Turn the music off' : 'Play music'} onClick={toggle}><span aria-hidden="true">♪</span>{on ? '' : ' Tap for music'}</button>
+    return () => { GESTURES.forEach((g) => removeEventListener(g, tryIt)); document.removeEventListener('visibilitychange', vis); audio.current.forEach((a) => a.pause()) }
+  }, [])
+  const toggle = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    wanted.current = !on
+    if (on) { audio.current.forEach((a) => a.pause()); setOn(false) } else play()
+  }
+  return <button type="button" className={`music${on ? ' is-on' : ''}`} aria-pressed={on} aria-label={on ? 'Turn the music off' : 'Play music'} onPointerDown={(e) => e.stopPropagation()} onPointerUp={(e) => e.stopPropagation()} onClick={toggle}><span aria-hidden="true">♪</span>{on ? '' : wanted.current ? ' Tap for music' : ' Music off'}</button>
 }
 
 const App = () => <main><StoryV2 /><Music /></main>
