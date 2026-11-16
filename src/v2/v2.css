@@ -196,7 +196,7 @@ html:has(.v2), html:has(.v2) body { background: #33463A; }
 .guide { position: absolute; z-index: 9; left: 0; top: 0; width: 30%; aspect-ratio: 640 / 427; pointer-events: none; will-change: transform; }
 .guide .tilt, .guide .flip { position: absolute; inset: 0; transform-origin: 50% 85%; transform-style: preserve-3d; }
 .guide img { position: absolute; filter: drop-shadow(0 6px 6px rgba(40, 50, 40, 0.25)); }
-.fly-pose { position: absolute; inset: 0; transition: opacity 0.15s; }
+.fly-pose { position: absolute; inset: 0; transition: opacity 0.32s ease; }
 .fly-pose img { inset: 0; width: 100%; height: 100%; }
 .fly-pose .wb { transform-origin: 46.9% 43.9%; }
 .fly-pose .wf { transform-origin: 50.8% 50.8%; }
@@ -205,7 +205,7 @@ html:has(.v2), html:has(.v2) body { background: #33463A; }
 @keyframes flapB { from { transform: rotate(12deg); } to { transform: rotate(-24deg) scaleY(0.72); } }
 @keyframes flapF { from { transform: rotate(-14deg) scaleY(0.8); } to { transform: rotate(22deg) scaleY(0.68); } }
 /* the perched art faces left; mirror it so both poses face right and one turn flips the bird */
-.perch-pose { left: 24%; bottom: 10%; width: 52%; height: auto; transform: scaleX(-1); opacity: 0; transition: opacity 0.15s; }
+.perch-pose { left: 24%; bottom: 10%; width: 52%; height: auto; transform: scaleX(-1); opacity: 0; transition: opacity 0.32s ease; }
 .guide:not(.flying) .fly-pose { opacity: 0; }
 .guide:not(.flying) .perch-pose { opacity: 1; }
 .carry { left: 34%; bottom: -14%; width: 34%; height: auto; opacity: 0; transition: opacity 0.2s; }

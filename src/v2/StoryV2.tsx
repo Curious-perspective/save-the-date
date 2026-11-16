@@ -63,11 +63,14 @@ const P = {
   forest: { x: 68.3, y: 46.5 },
   palash: { x: 71.7, y: 12.7 },
   board: { x: 84, y: 22.5 },
-  jeep: { x: 70, y: 70 }, // on the windscreen frame of the jeep at rest in the road scene (worked out in perches())
+  jeep: { x: 70, y: 70 }, // on the bonnet of the jeep at rest in the road scene (worked out in perches())
 }
 const AIR3 = [{ x: 78, y: 9.7 }] // the hop from the palash to the board
 // Feet on the wood. All in stage widths (k = W/H in %): the bird is 30% wide and render() anchors it by its tail tip,
 // 0.08 W below its feet. Branch tops and sizes are the ones in v2.css (.branchA, .palash, .sign-turn/.board).
+// the short turn it makes just above the boards while the date board goes up and the RSVP board comes down; kept only
+// a little above the board's top edge, because on a tall phone the frame's top is close above it (set in perches())
+const HOP = [{ x: 72, y: 20 }, { x: 58, y: 19 }, { x: 74, y: 20 }]
 const perches = (W: number, H: number, crop = 0) => {
   if (!W || !H) return // no size yet (a tab that is not showing): keep the last good numbers
   // crop = px of the stage hidden above the screen on tall phones; the sign group (.palash-grp) starts below it
@@ -77,14 +80,15 @@ const perches = (W: number, H: number, crop = 0) => {
   P.board.y = c + 8 * g + (0.234 + tail) * k     // .sign-turn top 8% + the board's 26% margin = the board's top edge
   AIR3[0].y = P.palash.y - 3
   // the jeep at rest on the road (v2.css `.art > img.jeep`: 70.16% of the painting wide, left 14.92%, bottom 13.5%;
-  // the painting is as tall as the stage or as wide, bottom-anchored and centred). Feet on top of the windscreen frame: 61%
-  // along the jeep, 11% down from its top (the art faces right on screen). Not the bonnet: the painted deer stands
-  // right behind it there, and its antlers looked like the bird's.
+  // the painting is as tall as the stage or as wide, bottom-anchored and centred). Feet ON THE BONNET (the couple's call), towards
+  // its front: 86% along the jeep, 37% down from its top (the art faces right on screen), which keeps the bird clear
+  // of the antlers of the painted deer standing behind.
   { const aw = Math.max(W, H * 0.5625), ah = aw * 1536 / 864, jw = 0.7016 * aw, jh = jw * 606 / 1128
     const jx = (W - aw) / 2 + 0.1492 * aw, jtop = H - 0.135 * ah - jh
-    P.jeep.x = ((jx + 0.61 * jw) / W) * 100; P.jeep.y = ((jtop + 0.11 * jh) / H) * 100 + tail * k }
+    P.jeep.x = ((jx + 0.86 * jw) / W) * 100; P.jeep.y = ((jtop + 0.37 * jh) / H) * 100 + tail * k }
   // PAPER has no branch: the hornbill sits on the card's own top edge, by its right-hand flowers
   if (BOARD === 'paper') { P.palash.x = 82; P.palash.y = P.board.y; P.board.x = 89; AIR3[0].x = 86; AIR3[0].y = P.board.y - 4 }
+  HOP[0].y = P.board.y - 1.5; HOP[1].y = P.board.y - 2.5; HOP[2].y = P.board.y - 1.5
   if (ROCK) {
     // feet on the stone: the rocks stand on the bottom edge (.b-rock in v2.css: wide 110cqw, its foot 1% above the
     // bottom; tall 86cqw, 4% below), so their tops are 99 - 0.51k and 104 - 1.218k. On the wide rock the bird sits on
@@ -469,22 +473,25 @@ function Animated() {
 
       // hornbill: seated on the forest branch from the first frame (behind the leaves). As the forest sinks it flies on
       // ahead, out past the right edge; it comes back in with the palash branch and lands on it as the sign settles.
-      fly([P.forest, { x: 80, y: 38 }, { x: 98, y: 27 }, { x: 120, y: 20 }], 2.15, 0.8)
+      if (ROCK) fly([P.forest, { x: 80, y: 38 }, { x: 98, y: 27 }, { x: 120, y: 20 }], 2.15, 0.8)
       if (ROCK) {
         fly([{ x: 120, y: 14 }, { x: 98, y: 7 }, { x: 82, y: 6 }, P.palash], 4.95, 0.5)
         fly([P.palash, { x: 92, y: 9 }, { x: 122, y: 12 }], 6.3, 0.45)
         fly([{ x: 122, y: 14 }, { x: 98, y: 7 }, { x: 82, y: 6 }, P.palash], 7.75, 0.5)
         fly([P.palash, ...AIR3, P.board], F2 + 0.05, 0.55) // lands on the tall stone as it arrives
       } else {
-        // (the couple, 17 Nov) it comes in under the board and SITS ON THE JEEP as the jeep stops at the centre…
-        fly([{ x: 122, y: 46 }, { x: 106, y: 50 }, { x: 94, y: 54 }, P.jeep], 3.6, 0.5)
-        // …takes off as the jeep drives away and flies on ahead of it
-        fly([P.jeep, { x: 96, y: 52 }, { x: 124, y: 42 }], 4.3, 0.4)
-        // at the resort it comes back and SITS ON THE BOARD as the date board comes down…
-        fly([{ x: 122, y: 14 }, { x: 98, y: 7 }, { x: 88, y: 6 }, P.palash], 7.75, 0.5)
-        // …lifts off when that board goes up, and lands on the RSVP board as it comes down. It carries nothing.
-        fly([P.palash, { x: 100, y: 12 }, { x: 124, y: 14 }], F2 - 0.65, 0.4)
-        fly([{ x: 124, y: 14 }, { x: 100, y: 7 }, { x: 94, y: 6 }, P.board], F2, 0.5)
+        // (the couple, 17 Nov) THE HORNBILL NEVER LEAVES THE SCREEN, and every move is one long smooth flight that ends
+        // where the next begins. Waypoints keep the whole bird inside the frame (x 16-86, y 10-90).
+        // forest branch → as the forest sinks it glides a slow loop over the river and lands ON THE BONNET of the jeep
+        // just as the jeep stops at the centre
+        fly([P.forest, { x: 60, y: 34 }, { x: 38, y: 32 }, { x: 28, y: 46 }, { x: 46, y: 58 }, { x: 70, y: 60 }, P.jeep], 2.15, 1.9)
+        // the jeep drives away: it hops up onto the families board
+        fly([P.jeep, { x: 82, y: 52 }, { x: 84, y: 32 }, P.palash], 4.3, 0.6)
+        // the board lifts and the river scene gives way to the resort: it circles, in view all the while, and settles
+        // on the date board as that comes down
+        fly([P.palash, { x: 72, y: 26 }, { x: 46, y: 30 }, { x: 28, y: 42 }, { x: 44, y: 54 }, { x: 70, y: 52 }, { x: 84, y: 40 }, P.palash], 6.3, 1.95)
+        // the date board goes up: it rises off it, turns in the sky above, and comes down onto the RSVP board
+        fly([P.palash, ...HOP, P.board], F2 - 0.65, 1.15)
       }
 
       // three curtains, one after another, each parting to the LEFT and RIGHT: we push through the near one, then the
