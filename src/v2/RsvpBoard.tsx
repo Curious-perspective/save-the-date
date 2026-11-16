@@ -58,8 +58,8 @@ export default function RsvpBoard({ onSent }: { onSent: (a: 'yes' | 'no' | null)
         <>
           <p className="board-q" id="q-attend">Will you join us?</p>
           <div className="board-choices" role="group" aria-labelledby="q-attend">
-            <button type="button" className="board-btn" onClick={() => choose('yes')}>Joyfully accept</button>
-            <button type="button" className="board-btn" onClick={() => choose('no')}>Regretfully decline</button>
+            <button type="button" className="board-btn board-yes" onClick={() => choose('yes')}>Joyfully accept</button>
+            <button type="button" className="board-btn board-no" onClick={() => choose('no')}>Regretfully decline</button>
           </div>
           <p className="board-note">{content.formal}</p>
         </>

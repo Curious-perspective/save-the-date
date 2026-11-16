@@ -255,8 +255,19 @@ html:has(.v2), html:has(.v2) body { background: #33463A; }
 .b-paper .date-m, .b-paper .board-k { color: #8A6418; }
 .b-paper .board-go, .b-paper .cal summary { background: #2E4636; border-color: #2E4636; }
 .b-paper .board-link { color: #2E4636; }
-.b-paper .board-dots i, .b-rock .board-dots i { background: rgba(106, 67, 24, 0.3); }
-.b-paper .board-dots i.on, .b-rock .board-dots i.on { background: #6A4318; }
+/* the couple, 17 Nov night: NO brown on the pastel board. Two inks only: the jeep's deep green (names, date, the
+   "kindly respond" heading, the main buttons) and the antique gold of the small capitals for everything else. */
+.b-paper .plank, .b-paper .plank-line i, .b-paper .date-p, .b-paper .board-note, .b-paper .board-fld i, .b-paper .board-q, .b-paper .board-fld > span, .b-paper .board-step output, .b-paper .board-fld input { color: #8A6418; }
+.b-paper .board-btn, .b-paper .board-step button, .b-paper .cal-opts a { border-color: #8A6418; color: #8A6418; }
+.b-paper .board-fld input { border-color: #8A6418; }
+.b-paper .board-k { color: #2E4636; }
+.b-paper .board-go, .b-paper .board-yes { background: #2E4636; border-color: #2E4636; color: #FBF6EC; }
+.b-paper .board-dots i { background: rgba(138, 100, 24, 0.3); }
+.b-paper .board-dots i.on { background: #8A6418; }
+/* "Joyfully accept" full size, "Regretfully decline" smaller */
+.board-no { justify-self: center; min-height: 40px; padding: 0 16px; font-size: 0.98rem; }
+.b-rock .board-dots i { background: rgba(106, 67, 24, 0.3); }
+.b-rock .board-dots i.on { background: #6A4318; }
 .b-paper :is(.board-btn, .board-link, .board-step button, .cal summary, .cal-opts a):focus-visible, .b-rock :is(.board-btn, .board-link, .board-step button, .cal summary, .cal-opts a):focus-visible,
 .b-paper .board-fld input:focus, .b-rock .board-fld input:focus { outline: 2px solid #3B2414; outline-offset: 2px; }
 
@@ -274,7 +285,8 @@ html:has(.v2), html:has(.v2) body { background: #33463A; }
 .b-paper .plank-fam { left: 5%; right: 5%; padding: 34px 18px 26px; gap: 16px; }
 /* the couple, 17 Nov: three lines each. Name biggest, "daughter of / son of" smallest, parents in between */
 .b-paper .plank-fam .plank-line b, .b-paper .plank-fam .plank-line i { display: block; }
-.b-paper .plank-fam .plank-line b { font-size: 1.55em; line-height: 1.1; }
+/* the couple: the two names in Tangerine, like on the clouds (a small-bodied script, so it is set much larger) */
+.b-paper .plank-fam .plank-line b { font: 700 2.9em/0.95 'Tangerine', cursive; letter-spacing: 0.03em; }
 .b-paper .plank-fam .plank-line i { font-size: 0.8em; line-height: 1.5; }
 .b-paper .plank-date { width: 74%; }
 .b-paper .board { left: 3%; right: 3%; padding: 26px 16px 16px; }
