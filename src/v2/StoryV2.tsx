@@ -817,7 +817,7 @@ function Animated() {
           {/* the same words again, painted plainly on top: how solid the white is (--std-white in v2.css) */}
           <div className="std std-top" aria-hidden="true"><p className="std-t">{content.opening}</p></div>
         </div>
-        <p className="hint" aria-hidden="true">scroll</p>
+        <p className="hint" aria-hidden="true">scroll gently</p>
 
         {/* the hornbill */}
         <div className="guide" aria-hidden="true">

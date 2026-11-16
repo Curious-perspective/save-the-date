@@ -31,6 +31,22 @@ function Music() {
   return <button type="button" className={`music${on ? ' is-on' : ''}`} aria-pressed={on} aria-label={on ? 'Turn the music off' : 'Play music'} onPointerDown={(e) => e.stopPropagation()} onPointerUp={(e) => e.stopPropagation()} onClick={toggle}><span aria-hidden="true">♪</span>{on ? '' : wanted.current ? ' Tap for music' : ' Music off'}</button>
 }
 
-const App = () => <main><StoryV2 /><Music /></main>
+// THE NUDGE: a small arrow at the bottom when the guest has stopped scrolling for 4 s part-way through the story.
+// (`v2progress` only comes from the animated story, so the still version never shows it.)
+function Nudge() {
+  const [show, setShow] = useState(false)
+  useEffect(() => {
+    let p = 0, timer = 0
+    const arm = () => { setShow(false); clearTimeout(timer); timer = window.setTimeout(() => setShow(p > 0.02 && p < 0.985), 4000) }
+    const prog = (e: Event) => { p = (e as CustomEvent<number>).detail }
+    const moves = ['scroll', 'wheel', 'touchmove', 'keydown'] as const
+    moves.forEach((m) => addEventListener(m, arm, { passive: true }))
+    addEventListener('v2progress', prog); arm()
+    return () => { clearTimeout(timer); moves.forEach((m) => removeEventListener(m, arm)); removeEventListener('v2progress', prog) }
+  }, [])
+  return <i className={`nudge${show ? ' is-on' : ''}`} aria-hidden="true" />
+}
+
+const App = () => <main><StoryV2 /><Music /><Nudge /></main>
 
 createRoot(document.getElementById('root')!).render(<StrictMode><App /></StrictMode>)

@@ -56,8 +56,8 @@ html:has(.v2), html:has(.v2) body { background: #33463A; }
 .std-t { margin: 0; font: 400 22.5cqw/1.1 "Great Vibes", cursive; letter-spacing: 0.01em; color: #fff; white-space: pre-line; }
 /* the stage is as tall as the screen with its toolbars hidden (lvh); on the first screen the toolbars are showing, so
    the hint is lifted by their height to stay visible */
-.hint { position: absolute; z-index: 11; left: 0; right: 0; bottom: calc(100lvh - 100svh + env(safe-area-inset-bottom, 0px) + 18px); margin: 0; text-align: center; font: 600 0.75rem/1 var(--f-caps); letter-spacing: 0.4em; text-transform: uppercase; color: #F8EED8; text-shadow: 0 1px 6px rgba(20, 30, 20, 0.7); }
-.hint::after { content: ""; display: block; width: 1px; height: 26px; margin: 10px auto 0; background: currentColor; animation: hint 1.8s ease-in-out infinite; transform-origin: top; }
+.hint { position: absolute; z-index: 11; left: 0; right: 0; bottom: calc(100lvh - 100svh + env(safe-area-inset-bottom, 0px) + 18px); margin: 0; text-align: center; font: 600 0.98rem/1 var(--f-caps); letter-spacing: 0.3em; text-transform: uppercase; color: #FBF3DE; text-shadow: 0 1px 3px rgba(20, 30, 20, 0.85), 0 0 12px rgba(20, 30, 20, 0.6); }
+.hint::after { content: ""; display: block; width: 2px; height: 34px; margin: 11px auto 0; background: currentColor; animation: hint 1.8s ease-in-out infinite; transform-origin: top; }
 @keyframes hint { 0% { transform: scaleY(0); } 50% { transform: scaleY(1); } 100% { transform: scaleY(1); opacity: 0; } }
 
 /* gold foil lettering: a hammered-gold gradient clipped to the text, embossed with two drop shadows */
@@ -225,6 +225,12 @@ html:has(.v2), html:has(.v2) body { background: #33463A; }
 .loader em { font-style: italic; color: var(--gold-3); }
 @keyframes breathe { 50% { opacity: 0.45; } }
 .rsvp-fab { position: fixed; z-index: 50; right: calc(16px + env(safe-area-inset-right, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); padding: 13px 18px; border-radius: 999px; text-decoration: none; font: 600 0.8rem var(--f-caps); letter-spacing: 0.26em; color: #F3E3BC; background: rgba(30, 40, 32, 0.78); border: 1px solid rgba(233, 201, 122, 0.6); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); transition: opacity 0.3s, transform 0.3s; }
+/* the nudge (the couple, 17 Nov night): when a guest has not scrolled for a few seconds in the middle of the story, a
+   small arrow shows at the bottom and bobs; it goes the moment they scroll and never shows on the first or last screen */
+.nudge { position: fixed; z-index: 40; left: 50%; bottom: calc(env(safe-area-inset-bottom, 0px) + 26px); width: 18px; height: 18px; margin-left: -9px; border-right: 2.5px solid #FBF3DE; border-bottom: 2.5px solid #FBF3DE; rotate: 45deg; filter: drop-shadow(0 0 3px rgba(20, 30, 20, 0.9)) drop-shadow(0 0 8px rgba(20, 30, 20, 0.5)); opacity: 0; transition: opacity 0.5s ease; pointer-events: none; animation: nudge 1.6s ease-in-out infinite; }
+.nudge.is-on { opacity: 0.95; }
+@keyframes nudge { 50% { translate: 0 8px; } }
+@media (prefers-reduced-motion: reduce) { .nudge { animation: none; } }
 /* the music button: a small pill in the top corner; once the music plays it shrinks to the note alone */
 .music { position: fixed; z-index: 50; right: calc(12px + env(safe-area-inset-right, 0px)); top: calc(12px + env(safe-area-inset-top, 0px)); min-height: 44px; min-width: 44px; padding: 0 16px; border-radius: 999px; border: 1px solid rgba(243, 220, 154, 0.7); background: rgba(46, 70, 54, 0.92); color: #FBF6EC; font: 600 0.95rem var(--f-serif); cursor: pointer; box-shadow: 0 4px 12px rgba(20, 30, 20, 0.3); }
 .music.is-on { padding: 0; background: rgba(46, 70, 54, 0.7); }
