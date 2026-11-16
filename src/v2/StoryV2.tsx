@@ -243,7 +243,10 @@ const MOVING = ([3, 2, 1] as const).flatMap((d) => layerOf(d).slice(-MOVERS))
 const leafSrc = (l: Leaf) => `/v2/leaves/d${l.d}/${l.n}.webp`
 
 // fireflies among the opening leaves
-const JFLIES = Array.from({ length: 16 }, (_, i) => ({ left: `${10 + ((i * 47) % 80)}%`, top: `${14 + ((i * 31) % 74)}%`, delay: `${-(i * 0.9) % 6}s` }))
+// scattered, not in rows (the couple: "they look like they are in a line across"): one firefly somewhere inside each
+// cell of a 4 x 4 grid, at a seeded random spot, so they are spread over the screen but never line up
+const jr = (n: number) => { const x = Math.sin(n * 38.9694 + 78.233) * 43758.5453; return x - Math.floor(x) }
+const JFLIES = Array.from({ length: 16 }, (_, i) => ({ left: `${5 + ((i % 4) + jr(i)) * 22.5}%`, top: `${8 + (Math.floor(i / 4) + jr(i + 40)) * 21}%`, delay: `${(-jr(i + 80) * 6).toFixed(2)}s` }))
 const FLIES = Array.from({ length: 14 }, (_, i) => ({ left: `${8 + ((i * 53) % 84)}%`, top: `${48 + ((i * 29) % 40)}%`, delay: `${-(i * 0.7) % 6}s` }))
 // Dusk at the resort. All in % of the resort PAINTING (not the stage), so the lights stay on the art at every screen
 // shape and travel with it. Lit windows and doorways [x, y, width, height]: the four garlanded veranda arches, the
