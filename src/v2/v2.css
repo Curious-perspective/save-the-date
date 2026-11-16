@@ -2,12 +2,13 @@
 /* On a phone taller than the paintings (9:16) the extra height was all empty sky at the top. So there the stage is
    made taller than the screen and hangs from the bottom: --crop of it is hidden above the top edge, which brings the
    treetops, the names and everything else up and a little larger. 0 on 9:16 and wider screens. */
-.v2 { --crop: clamp(0px, (100svh - 177.78vw) * 0.55, 13svh); position: relative; height: 100svh; overflow: hidden; overflow: clip; background: #33463A; }
-.stage { position: absolute; top: calc(-1 * var(--crop)); bottom: 0; left: 50%; translate: -50% 0; width: min(100%, 62svh); overflow: hidden; overflow: clip; background: #A9C4DE; perspective: 1400px; perspective-origin: 50% 100%; container-type: inline-size; }
+.v2 { --crop: clamp(0px, (100lvh - 177.78vw) * 0.55, 13lvh); position: relative; height: 100lvh; overflow: hidden; overflow: clip; background: #33463A; }
+.stage { position: absolute; top: calc(-1 * var(--crop)); bottom: 0; left: 50%; translate: -50% 0; width: min(100%, 62lvh); overflow: hidden; overflow: clip; background: #A9C4DE; perspective: 1400px; perspective-origin: 50% 100%; container-type: inline-size; }
 @media (min-aspect-ratio: 3/4) { .stage { box-shadow: 0 0 80px rgba(0, 0, 0, 0.35); } }
 /* overflow: clip (not hidden) on the three clipping boxes: a `hidden` box is still scrollable by the browser, and focusing
    an RSVP field scrolled the whole painting sideways and up inside it. `clip` cannot scroll. (`hidden` stays as the fallback.) */
 .scene { position: absolute; inset: 0; overflow: hidden; overflow: clip; }
+html:has(.v2), html:has(.v2) body { background: #33463A; }
 .v2 img { user-select: none; -webkit-user-drag: none; pointer-events: none; display: block; }
 
 /* ---------- the forest ---------- */
@@ -48,12 +49,14 @@
 /* "You Are / Invited" (the couple's pick in docs/invite-tester, 16 Nov): Great Vibes, white, soft-light into the leaves, with a
    dark edge and deep-green halo (tester strength 0.92). Centred on the SCREEN: the stage hangs --crop above it. The blend and the
    filter sit on .std, not on the <p>: GSAP's intro makes the <p> its own stacking context, where a blend would have nothing to mix with. */
-.std { position: absolute; z-index: 2; left: 0; right: 0; top: calc(var(--crop) + 50svh); translate: 0 -50%; text-align: center; mix-blend-mode: soft-light;
+.std { position: absolute; z-index: 2; left: 0; right: 0; top: calc(var(--crop) + 50lvh); translate: 0 -50%; text-align: center; mix-blend-mode: soft-light;
   filter: drop-shadow(0 1px 1px rgba(40, 26, 6, 0.87)) drop-shadow(0 0 1.2cqw rgba(18, 28, 16, 0.78)) drop-shadow(0 0 3.7cqw rgba(18, 28, 16, 0.64)) drop-shadow(0 0 6.9cqw rgba(18, 28, 16, 0.46)); }
 /* soft light alone leaves the letters see-through and tinted by whatever is under them; this plain white copy on top sets how solid they are */
 .std-top { --std-white: 0.5; mix-blend-mode: normal; filter: none; opacity: var(--std-white); }
 .std-t { margin: 0; font: 400 22.5cqw/1.1 "Great Vibes", cursive; letter-spacing: 0.01em; color: #fff; white-space: pre-line; }
-.hint { position: absolute; z-index: 11; left: 0; right: 0; bottom: calc(env(safe-area-inset-bottom, 0px) + 18px); margin: 0; text-align: center; font: 600 0.75rem/1 var(--f-caps); letter-spacing: 0.4em; text-transform: uppercase; color: #F8EED8; text-shadow: 0 1px 6px rgba(20, 30, 20, 0.7); }
+/* the stage is as tall as the screen with its toolbars hidden (lvh); on the first screen the toolbars are showing, so
+   the hint is lifted by their height to stay visible */
+.hint { position: absolute; z-index: 11; left: 0; right: 0; bottom: calc(100lvh - 100svh + env(safe-area-inset-bottom, 0px) + 18px); margin: 0; text-align: center; font: 600 0.75rem/1 var(--f-caps); letter-spacing: 0.4em; text-transform: uppercase; color: #F8EED8; text-shadow: 0 1px 6px rgba(20, 30, 20, 0.7); }
 .hint::after { content: ""; display: block; width: 1px; height: 26px; margin: 10px auto 0; background: currentColor; animation: hint 1.8s ease-in-out infinite; transform-origin: top; }
 @keyframes hint { 0% { transform: scaleY(0); } 50% { transform: scaleY(1); } 100% { transform: scaleY(1); opacity: 0; } }
 
@@ -82,7 +85,7 @@
    a jeep with two people is ~12% tall), and placed in % of the PAINTING so it stays on the road at every screen shape */
 .art > img.jeep2 { position: absolute; left: 11%; bottom: 12.6%; width: 50%; height: auto; aspect-ratio: 1128 / 606; transform: scaleX(-1); filter: drop-shadow(0 5px 5px rgba(40, 30, 20, 0.25)); }
 /* the painting's own box: as tall as the stage, or as wide when the stage is wider than 9:16; bottom-anchored, centred */
-.art { position: absolute; left: 50%; bottom: 0; translate: -50% 0; width: max(100%, (100svh + var(--crop)) * 0.5625); aspect-ratio: 864 / 1536; }
+.art { position: absolute; left: 50%; bottom: 0; translate: -50% 0; width: max(100%, (100lvh + var(--crop)) * 0.5625); aspect-ratio: 864 / 1536; }
 .art > img { width: 100%; height: 100%; }
 /* on the painted track along the left bank (river-road.webp: track bottom at ~47.5% of the layer, x 0–35%).
    Mirrored to face right: it drives in from behind the left-edge grass and stops before the track ends at the water. */
@@ -112,7 +115,7 @@
    Each cloud is placed against the PAINTING, not the stage (--art-h is the paintings' height: they are fitted by
    height, or by width on a wide stage), so the lettering stays in the open sky between the treetops at every shape. */
 .names { margin: 0; font-weight: 400; }
-.cloud { --art-h: max(100svh + var(--crop), 177.78cqw); position: absolute; left: 4%; width: 100%; display: grid; justify-items: center; align-content: center; pointer-events: none; will-change: transform; }
+.cloud { --art-h: max(100lvh + var(--crop), 177.78cqw); position: absolute; left: 4%; width: 100%; display: grid; justify-items: center; align-content: center; pointer-events: none; will-change: transform; }
 /* lighter than painted: paler and less saturated, like the sky's own far clouds (a filter, not a fade) */
 .cloud > img { position: absolute; top: 0; width: 150%; max-width: none; height: auto; filter: saturate(0.52) brightness(1.15) contrast(0.9); }
 .cloud-a { z-index: 2; bottom: calc(var(--art-h) * 0.692 - 13.7cqw + 27cqw); height: 19.6cqw; padding-top: 3.5cqw; }
@@ -125,7 +128,7 @@
    ends by the tail of its y. */
 .cl-name, .cl-sub { color: #FFF6E4; text-shadow: 0 0.25cqw 0.5cqw rgba(60, 25, 30, 0.8), 0 0.6cqw 1.6cqw rgba(60, 25, 30, 0.6), 0 0 3cqw rgba(60, 25, 30, 0.35); }
 .cl-name { position: relative; font: 700 15cqw/0.9 "Tangerine", var(--f-serif); letter-spacing: 0.03em; white-space: nowrap; }
-.cl-sub { position: absolute; right: 10cqw; top: 12.5cqw; font: italic 600 5.8cqw/1 var(--f-serif); letter-spacing: 0.02em; white-space: nowrap; }
+.cl-sub { position: absolute; right: 6.5cqw; top: 11.4cqw; font: italic 600 5.8cqw/1 var(--f-serif); letter-spacing: 0.02em; white-space: nowrap; }
 .cl-amp { font-size: 0.9em; margin-left: 0.18em; }
 
 /* wooden planks carry the words */
@@ -221,7 +224,7 @@
 /* ---------- reduced motion: the same story as four still panels down the page (<Calm /> in StoryV2.tsx) ----------
    No pin, no scrub. Each panel is a .stage of its own, one screen tall; what the timeline would have revealed is shown. */
 .v2.calm { --crop: 0px; height: auto; overflow: visible; }
-.calm .stage { position: relative; top: 0; height: 100svh; }
+.calm .stage { position: relative; top: 0; height: 100lvh; }
 .calm .resort, .calm .rwin, .calm .rlamp, .calm .plank-date, .calm .board { visibility: visible; }
 .calm .board { pointer-events: auto; }
 .calm-bird { position: absolute; z-index: 9; width: 15.6cqw; height: auto; filter: drop-shadow(0 6px 6px rgba(40, 50, 40, 0.25)); }

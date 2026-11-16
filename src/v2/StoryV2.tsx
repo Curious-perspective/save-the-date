@@ -457,12 +457,12 @@ function Animated() {
         const reach = () => (inFrame + (lf.w / 100) * LEAF_A[lf.n] + 0.2) * sw() // root + its whole length + a margin
         const drift = (R() - 0.5) * 0.16
         const swing = (lf.hang ? -side : side) * (10 + R() * 16)
-        tl!.fromTo(el, { x: 0, y: 0, rotation: lf.r }, { x: () => side * reach(), y: () => drift * sh(), rotation: lf.r + swing, duration: 0.28 + R() * 0.06, ease: 'power2.in', immediateRender: false }, 0.02 + (lf.d - 1) * 0.22 + R() * 0.12)
+        tl!.fromTo(el, { x: 0, y: 0, rotation: lf.r }, { x: () => side * reach(), y: () => drift * sh(), rotation: lf.r + swing, duration: 0.18 + R() * 0.05, ease: 'power2.in', immediateRender: false }, 0.02 + (lf.d - 1) * 0.3 + R() * 0.08)
       })
       ;([1, 2, 3] as const).forEach((d) => [-1, 1].forEach((side) => [0, 1, 2].forEach((b) => {
         tl!.fromTo(`.jbed.d${d}.${side < 0 ? 'L' : 'R'}.b${b}`, { x: 0, y: 0, rotation: 0 },
-          { x: () => side * 1.4 * sw(), y: () => (b - 1) * 0.05 * sh(), rotation: side * (4 + b * 3), duration: 0.3, ease: 'power2.in', immediateRender: false },
-          0.08 + (d - 1) * 0.22 + b * 0.03 + (side > 0 ? 0.03 : 0))
+          { x: () => side * 1.4 * sw(), y: () => (b - 1) * 0.05 * sh(), rotation: side * (4 + b * 3), duration: 0.2, ease: 'power2.in', immediateRender: false },
+          0.07 + (d - 1) * 0.3 + b * 0.02 + (side > 0 ? 0.02 : 0))
       })))
       // the fireflies among the leaves go out as the last curtain opens (light may fade)
       tl.to('.jfly', { opacity: 0, duration: 0.3 }, 0.6)
@@ -481,6 +481,10 @@ function Animated() {
       const tlNow = tl
       const AFTER = [0, 0.2, 0.15, 0.5, 0.4, 0] // the still stretch after each beat: resting anywhere in it counts as resting on the beat
       const CATCH = 0.35 // resting this close before a beat glides onto it
+      // `?gates=0`: no beats, the story simply follows the scroll (to review on a phone where the gates misbehave).
+      // `?debug=1`: a small readout of the scroll driver's state, for diagnosing a real phone from a screenshot.
+      const NOGATES = /[?&]gates=0\b/.test(location.search), DEBUG = /[?&]debug=1\b/.test(location.search)
+      const n = { scroll: 0, down: 0, up: 0, settle: 0, open: 0, sync: 0, err: '' }
       let lo = 0, hi = BEATS[1], free = false, touching = false
       let st: ScrollTrigger | undefined // created below, once drive() exists
       const typing = () => { const a = document.activeElement; return !!a && !!root.current?.contains(a) && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName) }
@@ -494,13 +498,15 @@ function Animated() {
         // a page opened in a tab that is not showing yet has no height: the pinned stretch is then 0 long, its progress
         // reads as 1, and the story jumped to the RSVP (and the later refresh scrolled the page there). Wait for a real size.
         if (!st || st.end - st.start < 10) return
-        const want = free ? at() : gsap.utils.clamp(lo, hi, at())
+        const want = free || NOGATES ? at() : gsap.utils.clamp(lo, hi, at())
         if (now) { gsap.killTweensOf(tlNow); tlNow.time(want) } else gsap.to(tlNow, { time: want, duration: 1, ease: 'expo', overwrite: true })
         show(want)
       }
       st = ScrollTrigger.create({ id: 'v2', trigger: root.current, start: 'top top', end: () => '+=' + innerHeight * 9.45, pin: true, onUpdate: () => drive() })
       const gates = (t: number) => { lo = Math.max(0, ...BEATS.filter((b) => b < t - 0.001)); hi = Math.min(U, ...BEATS.filter((b) => b > t + 0.001)) }
       const settle = () => {
+        n.settle++
+        if (NOGATES) return
         if (touching) return rest() // a finger is still down: wait for it to lift
         if (typing()) return
         let t = free ? at() : gsap.utils.clamp(lo, hi, at())
@@ -512,7 +518,7 @@ function Animated() {
       }
       // put the real scroll position where the story is (invisible: the stage is pinned). It fires a scroll event, so
       // drive() and one more (idle) settle() follow.
-      const sync = (t: number) => { if (!st) return; const y = st.start + (t / U) * (st.end - st.start); if (Math.abs(st.scroll() - y) > 2) st.scroll(y) }
+      const sync = (t: number) => { n.sync++; if (!st) return; const y = st.start + (t / U) * (st.end - st.start); if (Math.abs(st.scroll() - y) > 2) st.scroll(y) }
       // while a guest types, the browser may scroll the page to bring the field above the keyboard; the story ignores
       // that (typing()), and when the field is left the scroll is put back, so the RSVP board never slides away
       const leftField = () => sync(tlNow.time())
@@ -520,7 +526,7 @@ function Animated() {
       // "the scrolling has stopped" = no scroll event for 0.2s (a plain timer, not GSAP's ticker, which browsers throttle)
       let timer = 0
       const rest = () => { clearTimeout(timer); timer = window.setTimeout(settle, 200) }
-      const onScroll = rest
+      const onScroll = () => { n.scroll++; rest() }
       // A gate must also open for a guest who never stops: on a real phone people swipe again while the page is still
       // gliding, so "the scrolling has stopped" may not happen for a long time and the story sat at the first beat
       // (the couple's phone, 17 Nov). So: once the story has ARRIVED at the beat it is held at and stayed there for a
@@ -533,9 +539,9 @@ function Animated() {
         if (bound !== null && Math.abs(tlNow.time() - bound) < 0.03) { arrived ||= performance.now(); if (performance.now() - arrived > HOLD) gateAt = bound }
         else { arrived = 0; gateAt = null }
       }, 80)
-      const open = () => { if (gateAt === null || free || typing()) return; const t = gateAt; gateAt = null; arrived = 0; gates(t); sync(t) }
-      const down = () => { touching = true; open() }
-      const up = () => { touching = false; rest() }
+      const open = () => { if (gateAt === null || free || typing()) return; const t = gateAt; gateAt = null; arrived = 0; n.open++; gates(t); sync(t) }
+      const down = () => { n.down++; touching = true; open() }
+      const up = () => { n.up++; touching = false; rest() }
       const onWheel = () => { const n = performance.now(); if (n - lastWheel > 150) open(); lastWheel = n }
       addEventListener('wheel', onWheel, { passive: true })
       addEventListener('keydown', open)
@@ -545,6 +551,14 @@ function Animated() {
       addEventListener('touchend', up, { passive: true })
       addEventListener('touchcancel', up, { passive: true })
       addEventListener('v2free', setFree)
+      let dbg: HTMLElement | null = null, dbgTimer = 0
+      if (DEBUG) {
+        dbg = document.body.appendChild(Object.assign(document.createElement('pre'), { style: 'position:fixed;z-index:999;left:4px;top:4px;margin:0;padding:6px 8px;font:11px/1.35 ui-monospace,Menlo,monospace;color:#fff;background:rgba(0,0,0,.72);border-radius:6px;pointer-events:none;white-space:pre' }))
+        addEventListener('error', (e) => { n.err = String(e.message).slice(0, 60) })
+        dbgTimer = window.setInterval(() => {
+          dbg!.textContent = `story ${tlNow.time().toFixed(2)}  scroll ${at().toFixed(2)}\ngate ${lo}-${hi}  ready ${gateAt ?? '-'}\ny ${Math.round(scrollY)} / ${Math.round(document.documentElement.scrollHeight - innerHeight)}  h ${innerHeight}\npin ${st ? Math.round(st.start) + '-' + Math.round(st.end) : '-'}\ntouch ${touching ? 'DOWN' : 'up'}  typing ${typing() ? 'YES' : 'no'}  free ${free ? 'YES' : 'no'}\nscroll ${n.scroll} down ${n.down} up ${n.up}\nsettle ${n.settle} open ${n.open} sync ${n.sync}\n${n.err}`
+        }, 150)
+      }
       const rootEl = root.current!
       // a refresh (resize, rotate): the tweens' function-based values must be worked out again at the new size, as
       // `invalidateOnRefresh` did when ScrollTrigger owned the timeline (same steps as ScrollTrigger's own)
@@ -567,7 +581,7 @@ function Animated() {
       }
 
       return () => {
-        alive = false; clearTimeout(timer); clearInterval(watch); removeEventListener('wheel', onWheel); removeEventListener('keydown', open)
+        alive = false; clearTimeout(timer); clearInterval(watch); clearInterval(dbgTimer); dbg?.remove(); removeEventListener('wheel', onWheel); removeEventListener('keydown', open)
         ScrollTrigger.removeEventListener('refreshInit', place); ScrollTrigger.removeEventListener('refreshInit', before); ScrollTrigger.removeEventListener('refresh', after)
         removeEventListener('scroll', onScroll); removeEventListener('touchstart', down); removeEventListener('touchend', up); removeEventListener('touchcancel', up); removeEventListener('v2free', setFree); rootEl.removeEventListener('focusout', leftField)
       }
