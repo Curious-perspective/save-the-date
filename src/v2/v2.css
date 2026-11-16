@@ -289,7 +289,14 @@ html:has(.v2), html:has(.v2) body { background: #33463A; }
 .b-paper .plank-fam .plank-line b { font: 700 2.9em/0.95 'Tangerine', cursive; letter-spacing: 0.03em; }
 .b-paper .plank-fam .plank-line i { font-size: 0.8em; line-height: 1.5; }
 .b-paper .plank-date { width: 74%; }
-.b-paper .board { left: 3%; right: 3%; padding: 26px 16px 16px; }
+.b-paper .board { left: 6%; right: 6%; padding: 24px 14px 13px; }
+/* the couple, 17 Nov night: the RSVP board a little smaller, so the couple in the jeep below it are not covered */
+.b-paper .board-in { gap: 8px; }
+.b-paper .board-k { font-size: 0.72rem; letter-spacing: 0.15em; }
+.b-paper .board-q { font-size: clamp(1.25rem, 6.2cqw, 1.5rem); }
+.b-paper .board-btn { min-height: 46px; font-size: 1.08rem; }
+.b-paper .board-no { min-height: 36px; font-size: 0.95rem; }
+.b-paper .board-note { font-size: 1rem; }
 /* with no branch to hang from, the pastel boards sit higher (perches() in StoryV2.tsx uses the same 12%) */
 .b-paper .plank-fam, .b-paper .board { margin-top: 12%; }
 .b-paper .plank-date { margin-top: 12%; }
