@@ -53,6 +53,14 @@ const BEATS = BEATS_T.filter((b) => !ZONES.some(([a, len, w]) => w < len && b > 
 // rock = painted river boulders standing in the scene: they RISE from below the frame instead of hanging, and the
 // hornbill perches on top. All three are the same markup; v2.css restyles it under `.b-wood/.b-paper/.b-rock`.
 // ponytail: delete the losers (and the switch) once the couple have picked.
+// `?swipe=1` (the couple, 17 Nov night: "everyone has different power to put on the scroll… someone pulls all the way
+// up and we directly reach the end"): ONE SWIPE = ONE SCENE. The page does not scroll at all; a swipe, a wheel burst
+// or an arrow key, however hard, plays the story on to the next stop in STOPS at its own pace, and swipes made while
+// it is playing are ignored. A test link beside the scroll version, for the couple to compare on their phones.
+const SWIPE = /[?&]swipe=1\b/.test(location.search)
+// where the story rests, in TIMELINE time: invited · the names joined · the jeep at rest with the families · the
+// resort with the date · dusk with every light on · the RSVP
+const STOPS = [0, 1.8, 4.2, 8.6, 10.6, U]
 const BOARD = (/[?&]b=(wood|paper|rock)\b/.exec(location.search)?.[1] ?? 'paper') as 'wood' | 'paper' | 'rock'
 const ROCK = BOARD === 'rock'
 const DIR = ROCK ? 1 : -1 // the carrier leaves upwards (hung) or downwards (a rock sinking)
@@ -571,7 +579,7 @@ function Animated() {
         dispatchEvent(new CustomEvent('v2progress', { detail: t / US }))
       }
       const drive = (now = false) => {
-        if (typing()) return // the keyboard opening or a field scrolling into view must not move the story
+        if (typing() || (SWIPE && !now)) return // the keyboard opening or a field scrolling into view must not move the story (swipe mode: the scroll never drives it)
         // a page opened in a tab that is not showing yet has no height: the pinned stretch is then 0 long, its progress
         // reads as 1, and the story jumped to the RSVP (and the later refresh scrolled the page there). Wait for a real size.
         if (!st || st.end - st.start < 10) return
@@ -595,7 +603,7 @@ function Animated() {
       }
       // put the real scroll position where the story is (invisible: the stage is pinned). It fires a scroll event, so
       // drive() and one more (idle) settle() follow.
-      const sync = (t: number) => { n.sync++; if (!st) return; const y = st.start + (t / US) * (st.end - st.start); if (Math.abs(st.scroll() - y) > 2) st.scroll(y) }
+      const sync = (t: number) => { n.sync++; if (!st || SWIPE) return; const y = st.start + (t / US) * (st.end - st.start); if (Math.abs(st.scroll() - y) > 2) st.scroll(y) }
       // while a guest types, the browser may scroll the page to bring the field above the keyboard; the story ignores
       // that (typing()), and when the field is left the scroll is put back, so the RSVP board never slides away
       const leftField = () => sync(head.s)
@@ -639,7 +647,7 @@ function Animated() {
       // SMOOTH: every frame, move the story towards where the scroll is (eased, speed-capped). The RSVP button's jump
       // (free) is allowed to run faster.
       const chase = (_t: number, dt: number) => {
-        if (!SMOOTH || typing() || !st || st.end - st.start < 10) return
+        if (!SMOOTH || SWIPE || typing() || !st || st.end - st.start < 10) return
         const diff = at() - head.s
         if (Math.abs(diff) < 0.0004) { if (free) free = false; return }
         const cap = (free ? VMAX * 5 : VMAX) * Math.min(dt, 100) / 1000
@@ -656,7 +664,7 @@ function Animated() {
         tlNow.revert({ kill: false }).invalidate()
         tlNow.getChildren(true, true, false).forEach((c) => c.vars.immediateRender && c.render(0, true, true))
       }
-      const after = () => { if (keep < 2.15) { bird.x = P.forest.x; bird.y = P.forest.y } /* not flown yet: sit on the forest branch as now measured */; if (st && st.scroll() < 2 && !typing()) keep = Math.min(keep, 0) /* still at the very top: stay on the first screen */; gsap.killTweensOf(head); setS(keep, true); render(); gates(keep); if (!SMOOTH) sync(keep) } // the story stays where it was; the scroll is moved to match the new length
+      const after = () => { if (keep < 2.15) { bird.x = P.forest.x; bird.y = P.forest.y } /* not flown yet: sit on the forest branch as now measured */; if (!SWIPE && st && st.scroll() < 2 && !typing()) keep = Math.min(keep, 0) /* still at the very top: stay on the first screen */; gsap.killTweensOf(head); setS(keep, true); render(); gates(keep); if (!SMOOTH) sync(keep) } // the story stays where it was; the scroll is moved to match the new length
       ScrollTrigger.addEventListener('refreshInit', before)
       ScrollTrigger.addEventListener('refresh', after)
       // `ignoreMobileResize` skips height-only window resizes (toolbars sliding), but on a phone the stage often gets its
@@ -673,6 +681,32 @@ function Animated() {
         // preview aid: v2go(t) puts the story at t at once, through the gates (the old `st.animation` helpers still read the timeline)
         Object.assign(st, { animation: tlNow })
         Object.assign(window, { v2tl: tlNow, v2go: (t: number) => { t = toS(t); /* v2go takes TIMELINE time, as before */ free = true; st.scroll(st.start + (t / US) * (st.end - st.start)); ScrollTrigger.update(); drive(true); free = false; gates(t); return tlNow.time() }, v2gates: () => [lo, hi] })
+      }
+
+      // ONE SWIPE = ONE SCENE (`?swipe=1`). The page is locked (no scroll, no pull-to-refresh); each gesture tweens the
+      // story's own clock to the next stop. Speed 0.62 story-units a second, between 1.8 and 6 s a scene.
+      let unswipe = () => {}
+      if (SWIPE) {
+        const html = document.documentElement, was = [html.style.overflow, html.style.overscrollBehavior, rootEl.style.touchAction]
+        html.style.overflow = 'hidden'; html.style.overscrollBehavior = 'none'; rootEl.style.touchAction = 'none'
+        let playing = false, y0: number | null = null, lastW = 0
+        const go = (dir: 1 | -1) => {
+          if (playing || typing() || !intro.totalProgress() || intro.isActive()) return
+          const t = tlNow.time(), next = dir > 0 ? STOPS.find((b) => b > t + 0.01) : [...STOPS].reverse().find((b) => b < t - 0.01)
+          if (next === undefined) return
+          playing = true
+          const to = toS(next), dur = gsap.utils.clamp(1.8, 6, Math.abs(to - head.s) / 0.62)
+          gsap.to(head, { s: to, duration: dir > 0 ? dur : dur * 0.6, ease: 'sine.inOut', overwrite: true, onUpdate: () => { tlNow.time(toT(head.s)); show(head.s) }, onComplete: () => { playing = false } })
+        }
+        const tStart = (e: TouchEvent) => { y0 = e.touches[0].clientY }
+        const tEnd = (e: TouchEvent) => { if (y0 === null) return; const dy = e.changedTouches[0].clientY - y0; y0 = null; if (Math.abs(dy) > 36) go(dy < 0 ? 1 : -1) }
+        // a wheel or trackpad sends a long tail of events: only the start of a new burst counts
+        const wheel = (e: WheelEvent) => { const now = performance.now(), fresh = now - lastW > 220; lastW = now; if (fresh && Math.abs(e.deltaY) > 2) go(e.deltaY > 0 ? 1 : -1) }
+        const key = (e: KeyboardEvent) => { if (typing()) return; if (['ArrowDown', 'PageDown', ' '].includes(e.key)) { e.preventDefault(); go(1) } else if (['ArrowUp', 'PageUp'].includes(e.key)) { e.preventDefault(); go(-1) } }
+        addEventListener('touchstart', tStart, { passive: true }); addEventListener('touchend', tEnd, { passive: true })
+        addEventListener('wheel', wheel, { passive: true }); addEventListener('keydown', key)
+        if (import.meta.env.DEV) Object.assign(window, { v2swipe: go })
+        unswipe = () => { [html.style.overflow, html.style.overscrollBehavior, rootEl.style.touchAction] = was; removeEventListener('touchstart', tStart); removeEventListener('touchend', tEnd); removeEventListener('wheel', wheel); removeEventListener('keydown', key) }
       }
 
       // THE ENDING (the couple, 17 Nov night) · once a response is sent the hornbill leaves the board: after a "yes" it
@@ -710,7 +744,7 @@ function Animated() {
       addEventListener('v2rsvp', onRsvp)
 
       return () => {
-        removeEventListener('v2rsvp', onRsvp); ending?.kill()
+        removeEventListener('v2rsvp', onRsvp); ending?.kill(); unswipe()
         alive = false; gsap.ticker.remove(chase); clearTimeout(timer); clearTimeout(roT); ro.disconnect(); clearInterval(watch); clearInterval(dbgTimer); dbg?.remove(); removeEventListener('wheel', onWheel); removeEventListener('keydown', open)
         ScrollTrigger.removeEventListener('refreshInit', place); ScrollTrigger.removeEventListener('refreshInit', before); ScrollTrigger.removeEventListener('refresh', after)
         removeEventListener('scroll', onScroll); removeEventListener('touchstart', down); removeEventListener('touchend', up); removeEventListener('touchcancel', up); removeEventListener('v2free', setFree); rootEl.removeEventListener('focusout', leftField)
@@ -820,7 +854,7 @@ function Animated() {
           {/* the same words again, painted plainly on top: how solid the white is (--std-white in v2.css) */}
           <div className="std std-top" aria-hidden="true"><p className="std-t">{content.opening}</p></div>
         </div>
-        <p className="hint" aria-hidden="true">scroll gently</p>
+        <p className="hint" aria-hidden="true">{SWIPE ? 'swipe up' : 'scroll gently'}</p>
 
         {/* the hornbill */}
         <div className="guide" aria-hidden="true">
