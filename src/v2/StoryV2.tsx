@@ -397,7 +397,10 @@ function Animated() {
         // (the lift is on the clouds themselves: a transform on their parent would flatten their two depths into one)
         .fromTo('.cloud-a', { x: () => -1.6 * sw() }, { x: 0, duration: 0.7, ease: 'power2.out' }, 0.97)
         .fromTo('.cloud-b', { x: () => 1.6 * sw() }, { x: 0, duration: 0.7, ease: 'power2.out' }, 0.97)
-        .fromTo('.cloud-a, .cloud-b', { y: 0 }, { y: () => -0.75 * sh(), duration: 0.55, ease: 'power1.in', immediateRender: false }, 2.0)
+        // they leave the way they came, each carrying on along its own path (the couple, 17 Nov): Shreya's cloud, which
+        // drifted in from the left, sails on out to the right; Akshay's, from the right, on out to the left
+        .fromTo('.cloud-a', { x: 0 }, { x: () => 1.7 * sw(), duration: 0.55, ease: 'power2.in', immediateRender: false }, 2.0)
+        .fromTo('.cloud-b', { x: 0 }, { x: () => -1.7 * sw(), duration: 0.55, ease: 'power2.in', immediateRender: false }, 2.0)
         // FOREST → ROAD · we walk on: each whole layer sinks out of frame as we pass it, nearest first (grass, then the
         // forest with the hornbill's branch). The road scene is already standing behind, under the same sky.
         // Nothing is cut, scaled up or faded.
