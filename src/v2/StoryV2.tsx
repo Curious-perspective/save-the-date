@@ -25,7 +25,10 @@ if (import.meta.env.DEV) Object.assign(window, { gsap, ScrollTrigger })
 const U = 10.6
 const RESORT_END = 0.11 // for the closing picture the resort settles this much lower (in stage heights), so the lit villa stands clear below the RSVP board
 const RESORT_LOW = 0.22 // the resort waits this much lower (in stage heights), wholly hidden behind the riverside, and rises into place as the riverside sinks
-const FAR_LOW = 0.045 // how much lower the far trees (the riverside painting) stand while we are in the forest, in stage heights
+// While we are in the forest, the next scene (the riverside painting) waits this far below its place, in stage heights,
+// fully behind the forest's trees, so the mauve HILLS show in the gap between the treetops (the couple missed them:
+// the riverside's own far trees had been covering them). It rises into place as the forest sinks, as the resort does.
+const FAR_LOW = 0.36
 // The BEATS: where the story comes to rest and holds until the guest scrolls again. One gesture never goes past the
 // next one. 0 "You are invited" · 1.8 both names joined on their clouds · 4.15 the jeep at rest on the road ·
 // 5.8 the families sign · 8.6 the resort with the date sign · U the RSVP board.
@@ -418,7 +421,7 @@ function Animated() {
         .fromTo('.resort', { y: () => RESORT_LOW * sh() }, { y: 0, duration: 1.0, ease: 'sine.inOut', immediateRender: true }, 6.6)
         .set('.riverside', { visibility: 'hidden' }, 7.56)
         // THE RESORT · the jeep rolls the last few yards and stops by the garlanded gate (no bounce: it is parked)…
-        .fromTo('.jeep2', { left: '-40%' }, { left: '11%', duration: 0.75, ease: 'power3.out' }, 7.2)
+        .fromTo('.jeep2', { left: '-95%' }, { left: '11%', duration: 0.75, ease: 'power3.out' }, 7.2)
         // …and the sign comes back down, turned over meanwhile (F1): the date, the place, Add to calendar
         .fromTo('.palash-grp', { y: () => DIR * 1.2 * sh() }, { y: 0, duration: 0.55, ease: 'power2.out', immediateRender: false }, 7.7)
         // light: afternoon → golden hour → dusk
