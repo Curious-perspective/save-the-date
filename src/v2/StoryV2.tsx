@@ -23,7 +23,7 @@ if (import.meta.env.DEV) Object.assign(window, { gsap, ScrollTrigger })
   9.0–10.6 dusk falls; the hornbill brings the scroll; the sign turns over into the RSVP board
 */
 const U = 11.2
-const RESORT_END = 0.11 // for the closing picture the resort settles this much lower (in stage heights), so the lit villa stands clear below the RSVP board
+const RESORT_END = /[?&]b=(wood|rock)\b/.test(location.search) ? 0.11 : 0.06 // for the closing picture the resort settles this much lower (in stage heights), so the lit villa stands clear below the RSVP board
 const RESORT_LOW = 0.22 // the resort waits this much lower (in stage heights), wholly hidden behind the riverside, and rises into place as the riverside sinks
 // While we are in the forest, the next scene (the riverside painting) waits this far below its place, in stage heights,
 // fully behind the forest's trees, so the mauve HILLS show in the gap between the treetops (the couple missed them:
@@ -36,15 +36,17 @@ const BEATS_T = [0, 1.8, 4.15, 5.8, 8.6, U] // in TIMELINE time (the rock option
 // THE STORY CLOCK. After the jeep drives away (timeline 4.9) nothing moved until the board lifted at 6.35: on a phone
 // that was more than a screen of scrolling with a still picture (the couple, 17 Nov: "the board doesn't move after a
 // lot of scrolls even after the jeep has moved away"). Rather than renumber every later beat, the scroll is measured
-// on a STORY clock that runs through that idle stretch [IDLE_AT, IDLE_AT + IDLE_LEN] in IDLE_W instead of IDLE_LEN.
+// on a STORY clock that runs quickly through the idle stretches listed in ZONES.
 // toT() turns story time into timeline time, toS() the other way. Everything the scroll driver does is in story time.
-const IDLE_AT = 5.45, IDLE_LEN = 0.8
-const IDLE_W = /[?&]b=rock\b/.test(location.search) ? IDLE_LEN : 0.15
-const toT = (s: number) => (s <= IDLE_AT ? s : s <= IDLE_AT + IDLE_W ? IDLE_AT + (s - IDLE_AT) * (IDLE_LEN / IDLE_W) : s + IDLE_LEN - IDLE_W)
-const toS = (t: number) => (t <= IDLE_AT ? t : t <= IDLE_AT + IDLE_LEN ? IDLE_AT + (t - IDLE_AT) * (IDLE_W / IDLE_LEN) : t - IDLE_LEN + IDLE_W)
+// [start in timeline time, its length there, the length it gets on the story clock]
+//   1.7-2.0  the forest with both names joined, before the clouds leave ("the scroll is just a bit long on the first forest")
+//   5.45-6.25 the families board alone after the jeep has gone (the rock option keeps this one at full length)
+const ZONES: [number, number, number][] = [[1.7, 0.3, 0.1], [5.45, 0.8, /[?&]b=rock\b/.test(location.search) ? 0.8 : 0.15]]
+const toT = (s: number) => { let off = 0; for (const [a, len, w] of ZONES) { const sa = a - off; if (s <= sa) return s + off; if (s <= sa + w) return a + (s - sa) * (len / w); off += len - w } return s + off }
+const toS = (t: number) => { let off = 0; for (const [a, len, w] of ZONES) { if (t <= a) return t - off; if (t <= a + len) return a - off + (t - a) * (w / len); off += len - w } return t - off }
 const US = toS(U) // the story's length
 // beats in story time; a beat inside the hurried stretch is dropped
-const BEATS = BEATS_T.filter((b) => IDLE_W === IDLE_LEN || b <= IDLE_AT || b >= IDLE_AT + IDLE_LEN).map(toS)
+const BEATS = BEATS_T.filter((b) => !ZONES.some(([a, len, w]) => w < len && b > a && b < a + len)).map(toS)
 // WHAT CARRIES THE WORDS (families · date · RSVP): three options for the couple to compare, by URL `?b=wood|paper|rock`.
 // wood = the wooden sign on ropes (as before) · paper = an ivory card on gold cords, same branch, same turn-over ·
 // rock = painted river boulders standing in the scene: they RISE from below the frame instead of hanging, and the
@@ -77,7 +79,7 @@ const perches = (W: number, H: number, crop = 0) => {
   const k = (W / H) * 100, tail = 0.08, c = (crop / H) * 100, g = 1 - crop / H
   P.forest.y = 38 + (0.104 + tail) * k   // .branchA top 38%, feet on the thick limb 0.104 W below its top
   P.palash.y = c + 4 * g + (0.108 + tail) * k    // .palash top 4%, feet on top of the upper flower cluster
-  P.board.y = c + 8 * g + (0.234 + tail) * k     // .sign-turn top 8% + the board's 26% margin = the board's top edge
+  P.board.y = c + 8 * g + ((BOARD === 'paper' ? 0.108 : 0.234) + tail) * k     // .sign-turn top 8% + the board's 26% margin = the board's top edge
   AIR3[0].y = P.palash.y - 3
   // the jeep at rest on the road (v2.css `.art > img.jeep`: 70.16% of the painting wide, left 14.92%, bottom 13.5%;
   // the painting is as tall as the stage or as wide, bottom-anchored and centred). Feet ON THE BONNET (the couple's call), towards
@@ -88,7 +90,7 @@ const perches = (W: number, H: number, crop = 0) => {
     P.jeep.x = ((jx + 0.86 * jw) / W) * 100; P.jeep.y = ((jtop + 0.37 * jh) / H) * 100 + tail * k }
   // PAPER has no branch: the hornbill sits on the card's own top edge, by its right-hand flowers
   // (the couple, 17 Nov) not the same side both times: on the RIGHT of the date board, then on the LEFT of the RSVP board
-  if (BOARD === 'paper') { P.palash.x = 82; P.palash.y = P.board.y; P.board.x = 15; AIR3[0].x = 60; AIR3[0].y = P.board.y - 4 }
+  if (BOARD === 'paper') { P.palash.x = 82; P.palash.y = P.board.y; P.board.x = 11; AIR3[0].x = 60; AIR3[0].y = P.board.y - 4 }
   HOP[0].y = P.board.y - 1.5; HOP[1].y = P.board.y - 2.5; HOP[2].y = P.board.y - 1.5
   if (ROCK) {
     // feet on the stone: the rocks stand on the bottom edge (.b-rock in v2.css: wide 110cqw, its foot 1% above the
@@ -378,8 +380,10 @@ function Animated() {
         el.classList.toggle('flying', !bird.perched)
         el.classList.toggle('carrying', !!bird.scroll)
         const dx = bird.x - lastX, dy = bird.y - lastY
-        if (Math.abs(dx) > 0.04) {
-          const f = dx > 0 ? 1 : -1
+        // flying, it faces the way it is going; SITTING, it faces into the picture (right when it sits on the left)
+        const want = bird.perched ? (bird.x < 50 ? 1 : -1) : Math.abs(dx) > 0.04 ? (dx > 0 ? 1 : -1) : 0
+        if (want) {
+          const f = want
           if (f !== facing) { facing = f; gsap.to(flip, { rotationY: f > 0 ? 0 : 180, duration: 0.45, ease: 'sine.inOut', overwrite: true }) }
         }
         gsap.to(tilt, { rotation: bird.perched ? 0 : gsap.utils.clamp(-14, 14, dy * -6), duration: 0.3, overwrite: true })
@@ -540,7 +544,12 @@ function Animated() {
       const CATCH = 0.35 // resting this close before a beat glides onto it
       // `?gates=0`: no beats, the story simply follows the scroll (to review on a phone where the gates misbehave).
       // `?debug=1`: a small readout of the scroll driver's state, for diagnosing a real phone from a screenshot.
-      const NOGATES = /[?&]gates=0\b/.test(location.search), DEBUG = /[?&]debug=1\b/.test(location.search)
+      // (the couple, 17 Nov: "the scroll keeps changing… like one single scroll, not resetting") The default is now
+      // SMOOTH: no beats and no re-anchoring, the page's scroll position is never touched. The story chases the scroll
+      // with the same soft lag, but no faster than VMAX story-units a second, so a hard flick still plays every scene
+      // at a watchable pace instead of skipping them. `?gates=1` brings the old stopping-points back for comparison.
+      const SMOOTH = !/[?&]gates=1\b/.test(location.search), VMAX = 2.2
+      const NOGATES = SMOOTH || /[?&]gates=0\b/.test(location.search), DEBUG = /[?&]debug=1\b/.test(location.search)
       const n = { scroll: 0, down: 0, up: 0, settle: 0, open: 0, sync: 0, err: '' }
       let lo = 0, hi = BEATS[1], free = false, touching = false
       let st: ScrollTrigger | undefined // created below, once drive() exists
@@ -556,8 +565,8 @@ function Animated() {
         // reads as 1, and the story jumped to the RSVP (and the later refresh scrolled the page there). Wait for a real size.
         if (!st || st.end - st.start < 10) return
         const want = free || NOGATES ? at() : gsap.utils.clamp(lo, hi, at())
-        if (now) { gsap.killTweensOf(head); setS(want) } else gsap.to(head, { s: want, duration: 1, ease: 'expo', overwrite: true, onUpdate: () => { tlNow.time(toT(head.s)) } })
-        show(want)
+        if (now) { gsap.killTweensOf(head); setS(want) } else if (!SMOOTH) gsap.to(head, { s: want, duration: 1, ease: 'expo', overwrite: true, onUpdate: () => { tlNow.time(toT(head.s)) } })
+        show(SMOOTH && !now ? head.s : want) // SMOOTH: side effects follow the story, which may still be catching up
       }
       st = ScrollTrigger.create({ id: 'v2', trigger: root.current, start: 'top top', end: () => '+=' + innerHeight * 0.8915 * US, pin: true, onUpdate: () => drive() })
       const gates = (t: number) => { lo = Math.max(0, ...BEATS.filter((b) => b < t - 0.001)); hi = Math.min(US, ...BEATS.filter((b) => b > t + 0.001)) }
@@ -596,7 +605,7 @@ function Animated() {
         if (bound !== null && Math.abs(head.s - bound) < 0.03) { arrived ||= performance.now(); if (performance.now() - arrived > HOLD) gateAt = bound }
         else { arrived = 0; gateAt = null }
       }, 80)
-      const open = () => { if (gateAt === null || free || typing()) return; const t = gateAt; gateAt = null; arrived = 0; n.open++; gates(t); sync(t) }
+      const open = () => { if (SMOOTH || gateAt === null || free || typing()) return; const t = gateAt; gateAt = null; arrived = 0; n.open++; gates(t); sync(t) }
       const down = () => { n.down++; touching = true; open() }
       const up = () => { n.up++; touching = false; rest() }
       const onWheel = () => { const n = performance.now(); if (n - lastWheel > 150) open(); lastWheel = n }
@@ -616,6 +625,17 @@ function Animated() {
           dbg!.textContent = `story ${head.s.toFixed(2)}  scroll ${at().toFixed(2)}\ngate ${lo}-${hi}  ready ${gateAt ?? '-'}\ny ${Math.round(scrollY)} / ${Math.round(document.documentElement.scrollHeight - innerHeight)}  h ${innerHeight}\npin ${st ? Math.round(st.start) + '-' + Math.round(st.end) : '-'}\ntouch ${touching ? 'DOWN' : 'up'}  typing ${typing() ? 'YES' : 'no'}  free ${free ? 'YES' : 'no'}\nscroll ${n.scroll} down ${n.down} up ${n.up}\nsettle ${n.settle} open ${n.open} sync ${n.sync}\n${n.err}`
         }, 150)
       }
+      // SMOOTH: every frame, move the story towards where the scroll is (eased, speed-capped). The RSVP button's jump
+      // (free) is allowed to run faster.
+      const chase = (_t: number, dt: number) => {
+        if (!SMOOTH || typing() || !st || st.end - st.start < 10) return
+        const diff = at() - head.s
+        if (Math.abs(diff) < 0.0004) { if (free) free = false; return }
+        const cap = (free ? VMAX * 5 : VMAX) * Math.min(dt, 100) / 1000
+        setS(head.s + gsap.utils.clamp(-cap, cap, diff * (1 - Math.exp(-Math.min(dt, 100) / 260))))
+        show(head.s)
+      }
+      gsap.ticker.add(chase)
       const rootEl = root.current!
       // a refresh (resize, rotate): the tweens' function-based values must be worked out again at the new size, as
       // `invalidateOnRefresh` did when ScrollTrigger owned the timeline (same steps as ScrollTrigger's own)
@@ -625,7 +645,7 @@ function Animated() {
         tlNow.revert({ kill: false }).invalidate()
         tlNow.getChildren(true, true, false).forEach((c) => c.vars.immediateRender && c.render(0, true, true))
       }
-      const after = () => { if (keep < 2.15) { bird.x = P.forest.x; bird.y = P.forest.y } /* not flown yet: sit on the forest branch as now measured */; if (st && st.scroll() < 2 && !typing()) keep = Math.min(keep, 0) /* still at the very top: stay on the first screen */; gsap.killTweensOf(head); setS(keep, true); render(); gates(keep); sync(keep) } // the story stays where it was; the scroll is moved to match the new length
+      const after = () => { if (keep < 2.15) { bird.x = P.forest.x; bird.y = P.forest.y } /* not flown yet: sit on the forest branch as now measured */; if (st && st.scroll() < 2 && !typing()) keep = Math.min(keep, 0) /* still at the very top: stay on the first screen */; gsap.killTweensOf(head); setS(keep, true); render(); gates(keep); if (!SMOOTH) sync(keep) } // the story stays where it was; the scroll is moved to match the new length
       ScrollTrigger.addEventListener('refreshInit', before)
       ScrollTrigger.addEventListener('refresh', after)
       // `ignoreMobileResize` skips height-only window resizes (toolbars sliding), but on a phone the stage often gets its
@@ -645,7 +665,7 @@ function Animated() {
       }
 
       return () => {
-        alive = false; clearTimeout(timer); clearTimeout(roT); ro.disconnect(); clearInterval(watch); clearInterval(dbgTimer); dbg?.remove(); removeEventListener('wheel', onWheel); removeEventListener('keydown', open)
+        alive = false; gsap.ticker.remove(chase); clearTimeout(timer); clearTimeout(roT); ro.disconnect(); clearInterval(watch); clearInterval(dbgTimer); dbg?.remove(); removeEventListener('wheel', onWheel); removeEventListener('keydown', open)
         ScrollTrigger.removeEventListener('refreshInit', place); ScrollTrigger.removeEventListener('refreshInit', before); ScrollTrigger.removeEventListener('refresh', after)
         removeEventListener('scroll', onScroll); removeEventListener('touchstart', down); removeEventListener('touchend', up); removeEventListener('touchcancel', up); removeEventListener('v2free', setFree); rootEl.removeEventListener('focusout', leftField)
       }

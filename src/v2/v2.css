@@ -196,7 +196,9 @@ html:has(.v2), html:has(.v2) body { background: #33463A; }
 .guide { position: absolute; z-index: 9; left: 0; top: 0; width: 30%; aspect-ratio: 640 / 427; pointer-events: none; will-change: transform; }
 .guide .tilt, .guide .flip { position: absolute; inset: 0; transform-origin: 50% 85%; transform-style: preserve-3d; }
 .guide img { position: absolute; filter: drop-shadow(0 6px 6px rgba(40, 50, 40, 0.25)); }
-.fly-pose { position: absolute; inset: 0; transition: opacity 0.32s ease; }
+/* the flying art's body is about 17% shorter than the sitting art's at the same box size: scaled about the bird's
+   anchor so it is the same bird in both poses */
+.fly-pose { position: absolute; inset: 0; transition: opacity 0.32s ease; transform: scale(1.17); transform-origin: 50% 85%; }
 .fly-pose img { inset: 0; width: 100%; height: 100%; }
 .fly-pose .wb { transform-origin: 46.9% 43.9%; }
 .fly-pose .wf { transform-origin: 50.8% 50.8%; }
@@ -264,6 +266,9 @@ html:has(.v2), html:has(.v2) body { background: #33463A; }
 .b-paper .plank-fam { left: 9%; right: 9%; }
 .b-paper .plank-date { width: 74%; }
 .b-paper .board { left: 3%; right: 3%; padding: 26px 16px 16px; }
+/* with no branch to hang from, the pastel boards sit higher (perches() in StoryV2.tsx uses the same 12%) */
+.b-paper .plank-fam, .b-paper .board { margin-top: 12%; }
+.b-paper .plank-date { margin-top: 12%; }
 
 /* ROCK · the words on painted river boulders that stand IN the scene, on the bottom edge like a foreground layer
    (they rise from below and sink again: see ROCK in StoryV2.tsx; perches() there mirrors the widths and bottoms
