@@ -1,0 +1,162 @@
+<title>Names Lettering Tester</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Allura&family=Corinthia:wght@700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Great+Vibes&family=Imperial+Script&family=Italianno&family=Luxurious+Script&family=Parisienne&family=Petit+Formal+Script&family=Pinyon+Script&family=Rouge+Script&family=Tangerine:wght@700&display=swap">
+<style>
+  :root { --bg: #F6F0E4; --panel: #FFFAF0; --ink: #3B2E20; --muted: #7A6A58; --line: #D9CBB3; --accent: #6A4318; --on-accent: #FFF8EA; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --bg: #1E1914; --panel: #2A231C; --ink: #F0E6D4; --muted: #B5A690; --line: #4A3F33; --accent: #D9B26A; --on-accent: #1E1914; }
+  }
+  :root[data-theme="dark"] { --bg: #1E1914; --panel: #2A231C; --ink: #F0E6D4; --muted: #B5A690; --line: #4A3F33; --accent: #D9B26A; --on-accent: #1E1914; }
+
+  * { box-sizing: border-box; }
+  body { margin: 0; padding-block: 20px 48px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); background: var(--bg); color: var(--ink); font: 400 18px/1.45 "Cormorant Garamond", Georgia, serif; }
+  h1 { font-weight: 600; font-size: 26px; line-height: 1.15; margin: 0 0 4px; }
+  .intro { margin: 0 0 16px; color: var(--muted); }
+  .wrap { max-width: 1020px; margin: 0 auto; }
+  .layout { display: flex; flex-direction: column; gap: 16px; }
+  .stage { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); padding: 8px 0; }
+  .controls { min-width: 0; }
+  @media (min-width: 820px) {
+    .layout { flex-direction: row; align-items: flex-start; gap: 36px; }
+    .stage { flex: 0 0 400px; top: 16px; padding: 0; }
+    .controls { flex: 1; }
+  }
+
+  /* the preview imitates the forest scene's sky: same cloud geometry as the site, measured in cqw (% of preview width) */
+  .card { position: relative; container-type: inline-size; width: 100%; max-width: 400px; margin: 0 auto; aspect-ratio: 100 / 80; overflow: hidden; border-radius: 8px; background: url(sky.webp) top center / cover; }
+  .cloud { position: absolute; left: 4%; width: 100%; display: grid; justify-items: center; align-content: center; }
+  .cloud > img { position: absolute; top: 0; width: 150%; max-width: none; height: auto; filter: saturate(0.52) brightness(1.15) contrast(0.9); }
+  .cloud-a { top: 13cqw; height: 19.6cqw; padding-top: 3.5cqw; }
+  .cloud-a > img { left: 3%; }
+  .cloud-b { top: 38cqw; height: 27.4cqw; padding-top: 2.5cqw; }
+  .cloud-b > img { left: -52%; }
+  .name, .sub { position: relative; white-space: nowrap; color: var(--c); mix-blend-mode: var(--blend); }
+  /* padding + negative margin: room for swashes, so the gold-foil clip does not cut them off */
+  .name { line-height: 0.9; padding: 0.35em 0.5em; margin: -0.35em -0.5em; }
+  .sub { font: italic 400 4.6cqw/1.2 "Cormorant Garamond", serif; letter-spacing: 0.04em; margin-top: 0.6cqw; }
+
+  .fx-shadow .name, .fx-shadow .sub { text-shadow: 0 0.5cqw 1.1cqw rgba(60, 25, 30, 0.55); }
+  .fx-halo .name, .fx-halo .sub { text-shadow: 0 0 0.6cqw #fff, 0 0 1.6cqw rgba(255, 250, 235, 0.95), 0 0 3.2cqw rgba(255, 244, 220, 0.8); }
+  .fx-foil .name, .fx-foil .sub { color: transparent; -webkit-background-clip: text; background-clip: text;
+    background-image: linear-gradient(100deg, #8A5A14 0%, #E9C977 22%, #FFF3C4 38%, #B8862B 55%, #F3D98E 72%, #8A5A14 100%);
+    filter: drop-shadow(0 0.3px 0.3px rgba(62, 38, 6, 0.7)); }
+  .fx-emboss .name, .fx-emboss .sub { text-shadow: -0.7px -0.7px 0 rgba(255, 255, 255, 0.85), 0.9px 0.9px 0.6px rgba(40, 20, 10, 0.6); }
+
+  section { margin: 0 0 20px; }
+  h2 { font-size: 15px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin: 0 0 8px; }
+  .chips { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
+  button { font: inherit; color: var(--ink); background: var(--panel); border: 1.5px solid var(--line); border-radius: 8px; cursor: pointer; min-height: 44px; }
+  button[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
+  button:focus-visible, input:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  .chip { padding: 6px 8px 4px; text-align: center; overflow: hidden; }
+  .chip b { display: block; font-weight: 400; font-size: 30px; line-height: 1.25; white-space: nowrap; }
+  .chip small { display: block; font-size: 13px; color: var(--muted); }
+  .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .sw { width: 46px; height: 46px; min-height: 46px; border-radius: 50%; padding: 0; background: var(--sw); }
+  input[type="color"] { width: 46px; height: 46px; padding: 2px; border: 1.5px solid var(--line); border-radius: 8px; background: var(--panel); cursor: pointer; }
+  .pill { padding: 6px 14px; }
+  label.slider { display: grid; grid-template-columns: 9.5em 1fr; align-items: center; gap: 8px; margin-bottom: 6px; }
+  input[type="range"] { width: 100%; min-width: 0; height: 36px; accent-color: var(--accent); }
+  .hint { font-size: 15px; color: var(--muted); margin: 6px 0 0; }
+  .out { display: flex; flex-wrap: wrap; gap: 8px; align-items: stretch; }
+  #readout { flex: 1 1 240px; min-width: 0; margin: 0; padding: 10px 12px; background: var(--panel); border: 1.5px solid var(--line); border-radius: 8px; font: 15px/1.4 ui-monospace, Menlo, Consolas, monospace; user-select: all; -webkit-user-select: all; overflow-wrap: anywhere; }
+  #copy { padding: 6px 18px; background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+</style>
+
+<div class="wrap">
+  <h1>Shreya &amp; Akshay · the names on the clouds</h1>
+  <p class="intro">Tap a font, a colour and an effect. When you like it, copy the line at the bottom and send it to us.</p>
+  <div class="layout">
+    <div class="stage">
+      <div class="card" id="card">
+        <div class="cloud cloud-a"><img src="cloud-a.webp" alt=""><div class="name" id="l1"></div></div>
+        <div class="cloud cloud-b"><img src="cloud-b.webp" alt=""><div class="name" id="l2"></div><div class="sub">are getting married</div></div>
+      </div>
+    </div>
+    <div class="controls">
+      <section><h2>Font</h2><div class="chips" id="fonts"></div></section>
+      <section><h2>Colour</h2>
+        <div class="row" id="colors"></div>
+        <label class="row" style="margin-top:8px"><input type="color" id="picker" aria-label="Any other colour"> Any other colour</label>
+      </section>
+      <section><h2>Effect</h2><div class="row" id="effects"></div><p class="hint" id="fxhint"></p></section>
+      <section><h2>Size and spacing</h2>
+        <label class="slider"><span>Size <output id="sizeOut"></output></span><input type="range" id="size" min="8" max="28" step="0.5"></label>
+        <label class="slider"><span>Letter spacing <output id="lsOut"></output></span><input type="range" id="ls" min="-2" max="12" step="1"></label>
+        <div class="row" id="amps" style="margin-top:6px"></div>
+      </section>
+      <section><h2>Your choice</h2>
+        <div class="out"><p id="readout"></p><button id="copy" type="button">Copy</button></div>
+      </section>
+    </div>
+  </div>
+</div>
+<script>
+  // [family, default size in % of the frame width (tuned so every font spans the same width as Italianno at 15), weight]
+  var FONTS = [
+    ['Italianno', 15], ['Rouge Script', 13.5], ['Tangerine', 15.5, 700], ['Great Vibes', 12], ['Pinyon Script', 11.5],
+    ['Imperial Script', 13.5], ['Luxurious Script', 15], ['Alex Brush', 11.5], ['Allura', 11.5], ['Corinthia', 12, 700],
+    ['Parisienne', 10], ['Petit Formal Script', 8]
+  ];
+  var COLORS = [
+    ['#6A4318', 'Gold-umber (current)'], ['#3F2610', 'Dark umber'], ['#5A2C40', 'Rose-plum'], ['#2F4A32', 'Forest green'],
+    ['#1F2C4D', 'Ink navy'], ['#FFF6E4', 'Warm cream'], ['#A87A2A', 'Antique gold'], ['#5E1A22', 'Deep maroon']
+  ];
+  var EFFECTS = [['none', 'None'], ['shadow', 'Soft shadow'], ['halo', 'Light halo'], ['foil', 'Gold foil'], ['emboss', 'Embossed']];
+  var AMPS = [['1', '“&” after Shreya'], ['2', '“&” before Akshay']];
+  var KEY = 'names-lettering-tester';
+  var s = { font: 'Italianno', color: '#6A4318', effect: 'none', size: 15, ls: 1, amp: '1' };
+  try { var saved = JSON.parse(localStorage.getItem(KEY)); if (saved && fontOf(saved.font)) for (var k in s) if (saved[k] != null) s[k] = saved[k]; } catch (e) {}
+
+  function $(id) { return document.getElementById(id); }
+  function fontOf(name) { for (var i = 0; i < FONTS.length; i++) if (FONTS[i][0] === name) return FONTS[i]; }
+  function isLight(hex) { var n = parseInt(hex.slice(1), 16); return (0.299 * (n >> 16) + 0.587 * (n >> 8 & 255) + 0.114 * (n & 255)) > 150; }
+
+  function group(id, items, key, make) {
+    items.forEach(function (it) {
+      var b = document.createElement('button'); b.type = 'button'; b.dataset.v = it[0]; make(b, it);
+      b.onclick = function () { s[key] = it[0]; if (key === 'font') s.size = it[1]; render(); };
+      $(id).appendChild(b);
+    });
+  }
+  group('fonts', FONTS, 'font', function (b, f) { b.className = 'chip'; b.innerHTML = '<b style="font-family:\'' + f[0] + '\';font-weight:' + (f[2] || 400) + '">Shreya</b><small>' + f[0] + '</small>'; });
+  group('colors', COLORS, 'color', function (b, c) { b.className = 'sw'; b.style.setProperty('--sw', c[0]); b.title = c[1]; b.setAttribute('aria-label', c[1]); });
+  group('effects', EFFECTS, 'effect', function (b, e) { b.className = 'pill'; b.textContent = e[1]; });
+  group('amps', AMPS, 'amp', function (b, a) { b.className = 'pill'; b.textContent = a[1]; });
+  $('picker').oninput = function () { s.color = this.value.toUpperCase(); render(); };
+  $('size').oninput = function () { s.size = +this.value; render(); };
+  $('ls').oninput = function () { s.ls = +this.value; render(); };
+
+  function render() {
+    var f = fontOf(s.font), card = $('card'), light = isLight(s.color);
+    $('l1').textContent = s.amp === '1' ? 'Shreya &' : 'Shreya';
+    $('l2').textContent = s.amp === '1' ? 'Akshay' : '& Akshay';
+    [$('l1'), $('l2')].forEach(function (el) {
+      el.style.fontFamily = "'" + f[0] + "', cursive"; el.style.fontWeight = f[2] || 400;
+      el.style.fontSize = s.size + 'cqw'; el.style.letterSpacing = (s.ls / 100) + 'em';
+    });
+    card.className = 'card fx-' + s.effect;
+    card.style.setProperty('--c', s.color);
+    // dark paint is multiplied into the cloud, as on the site; a light colour would vanish that way, so it sits on top
+    card.style.setProperty('--blend', (s.effect === 'none' || s.effect === 'shadow') && !light ? 'multiply' : 'normal');
+    $('fxhint').textContent = s.effect === 'foil' ? 'Gold foil uses its own gold, so the colour choice does not apply.'
+      : s.effect === 'halo' && light ? 'The halo is meant for dark colours on a busy sky; with a light colour try Soft shadow.'
+      : s.effect === 'none' && light ? 'Light colours are hard to read on the pale cloud: try Soft shadow.' : '';
+    [['fonts', s.font], ['colors', s.color], ['effects', s.effect], ['amps', s.amp]].forEach(function (g) {
+      [].forEach.call($(g[0]).children, function (b) { b.setAttribute('aria-pressed', String(b.dataset.v === g[1])); });
+    });
+    $('picker').value = s.color.toLowerCase(); $('size').value = s.size; $('ls').value = s.ls;
+    $('sizeOut').textContent = s.size; $('lsOut').textContent = s.ls;
+    var fx = EFFECTS.filter(function (e) { return e[0] === s.effect; })[0][1].toLowerCase();
+    $('readout').textContent = 'Font: ' + s.font + ' · Colour: ' + (s.effect === 'foil' ? 'gold foil' : s.color) + ' · Effect: ' + fx +
+      ' · Size: ' + s.size + ' · Spacing: ' + s.ls + ' · & on line ' + s.amp;
+    try { localStorage.setItem(KEY, JSON.stringify(s)); } catch (e) {}
+  }
+  $('copy').onclick = function () {
+    var b = this, text = $('readout').textContent;
+    function done(ok) { b.textContent = ok ? 'Copied' : 'Select and copy'; setTimeout(function () { b.textContent = 'Copy'; }, 1800); }
+    try { navigator.clipboard.writeText(text).then(function () { done(true); }, function () { pick(); done(false); }); } catch (e) { pick(); done(false); }
+    function pick() { try { var r = document.createRange(); r.selectNodeContents($('readout')); var sel = getSelection(); sel.removeAllRanges(); sel.addRange(r); } catch (e) {} }
+  };
+  render();
+</script>

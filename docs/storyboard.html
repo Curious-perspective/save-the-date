@@ -1,0 +1,346 @@
+<title>The Road to Corbett</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&display=swap">
+<style>
+/* Layout: one row per scene, the phone frame left and the director's notes right; stacks on phones. Single light theme by choice (printed stationery). */
+:root{
+  color-scheme: light;
+  --ivory:#F6EFE3; --paper:#FBF6EC; --ink:#2C3328; --muted:#6A6356; --gold:#B98C3E; --gold-l:#E9C97A; --sage:#55705A; --line:#E2D6BE;
+  --f-serif:"Cormorant Garamond", Garamond, Georgia, serif;
+  --f-caps:"Cinzel", "Trajan Pro", Georgia, serif;
+}
+*{box-sizing:border-box}
+body{background:var(--ivory);color:var(--ink);font:500 18px/1.5 var(--f-serif);margin:0;position:relative;overflow-x:hidden}
+.wrap{max-width:1080px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:48px 72px;display:grid;gap:56px}
+.caps{font:600 .7rem/1.4 var(--f-caps);letter-spacing:.3em;text-transform:uppercase;color:var(--sage);margin:0}
+h1{font:500 clamp(2.4rem,7vw,4rem)/1 var(--f-serif);margin:0;text-wrap:balance}
+h1 em{color:var(--gold)}
+h2{font:500 clamp(1.7rem,4vw,2.3rem)/1.1 var(--f-serif);margin:0;text-wrap:balance}
+p{margin:0}
+.lede{max-width:60ch;color:var(--muted);font-size:1.12rem}
+.intro{display:grid;gap:14px}
+.rules{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,230px),1fr));gap:10px}
+.rule{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:grid;gap:2px}
+.rule b{font:600 1.1rem var(--f-serif)}
+.rule span{color:var(--muted);font-size:1rem;line-height:1.35}
+
+.scene{display:grid;grid-template-columns:300px minmax(0,1fr);gap:36px;align-items:start}
+@media (max-width:760px){.scene{grid-template-columns:minmax(0,1fr)}.phone{justify-self:center}}
+.phone{position:relative;width:100%;max-width:300px;aspect-ratio:9/16;border-radius:26px;overflow:hidden;box-shadow:0 30px 50px -28px rgba(40,40,30,.55),0 0 0 1px rgba(0,0,0,.05);isolation:isolate}
+.phone img.L{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 100%}
+.phone img.fill{object-fit:fill}
+.perch{position:absolute;width:1px;height:1px}
+.notes{display:grid;gap:16px;min-width:0}
+.meta{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font:600 .62rem/1 var(--f-caps);letter-spacing:.22em;text-transform:uppercase;border:1px solid var(--line);background:var(--paper);border-radius:999px;padding:7px 11px;color:var(--muted)}
+.chip.built{border-color:var(--sage);color:var(--sage)}
+ol.beats{margin:0;padding-left:1.3em;display:grid;gap:6px;max-width:62ch}
+ol.beats li::marker{font:600 .9rem var(--f-caps);color:var(--gold)}
+.blk{display:grid;gap:6px}
+.blk h3{font:600 .66rem/1 var(--f-caps);letter-spacing:.26em;text-transform:uppercase;color:var(--muted);margin:0}
+.art{display:flex;flex-wrap:wrap;gap:8px}
+.art span{font-size:.98rem;border-radius:8px;padding:4px 10px;border:1px solid var(--line);background:#fff}
+.art .new{border-color:var(--gold);background:#FFF8E8}
+.art .new::before{content:"New · ";font-weight:600;color:var(--gold)}
+.art .reuse::before{content:"Reuse · ";font-weight:600;color:var(--sage)}
+
+/* in-phone pieces */
+.ph-k{position:absolute;left:0;right:0;top:6%;text-align:center;font:600 .5rem var(--f-caps);letter-spacing:.38em;text-transform:uppercase;color:#3E4B3A;text-shadow:0 0 10px rgba(255,248,236,.9);z-index:5}
+.ph-names{position:absolute;left:0;right:0;top:20%;text-align:center;font:500 2.6rem/.86 var(--f-serif);color:#2E3A2C;text-shadow:0 0 18px rgba(255,246,232,.9);z-index:5;display:grid}
+.ph-names i{font-style:italic;font-weight:600;color:#A8822F;font-size:2.4rem}
+.ph-card{position:absolute;z-index:6;left:9%;right:9%;padding:16px 12px 14px;text-align:center;display:grid;gap:4px;background:var(--paper);border-radius:3px;box-shadow:0 18px 30px -14px rgba(30,40,30,.6);color:#3B342A}
+.ph-card::before{content:"";position:absolute;inset:5px;border:1px solid var(--gold);border-radius:2px;pointer-events:none}
+.ph-card .c-k{font:600 .44rem/1.4 var(--f-caps);letter-spacing:.26em;text-transform:uppercase;color:var(--sage)}
+.ph-card .c-t{font:500 1.05rem/1.15 var(--f-serif)}
+.ph-card .c-s{font:italic 500 .76rem/1.25 var(--f-serif);color:#5D5446}
+.ph-card .c-div{width:60%;justify-self:center;height:auto;margin:3px 0}
+.ph-card .c-btns{display:flex;gap:5px;justify-content:center;margin-top:3px}
+.ph-card .c-btns span{font:600 .6rem var(--f-serif);border:1px solid var(--gold);border-radius:999px;padding:3px 8px;background:#FFFDF8}
+.ph-card .c-fld{height:15px;border:1px solid #CDBF9F;border-radius:4px;background:#FFFDF8}
+.ph-card .c-seg{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+.ph-card .c-seg span{font:600 .58rem var(--f-serif);border:1px solid #CDBF9F;border-radius:4px;padding:4px 0}
+.ph-card .c-seg span:first-child{background:#3E5443;color:#F6EFE3;border-color:#3E5443}
+.ph-card .c-send{font:600 .45rem var(--f-caps);letter-spacing:.2em;text-transform:uppercase;background:#3E5443;color:#F6EFE3;border-radius:999px;padding:6px 0;margin-top:2px}
+.ph-card .c-lbl{font:600 .62rem var(--f-serif);text-align:left;margin-top:2px}
+
+/* placeholder for art still to be painted: clearly a blueprint, not a design */
+.todo{position:absolute;z-index:4;display:grid;place-items:center;text-align:center;padding:8px;border:1.5px dashed rgba(185,140,62,.95);border-radius:10px;background:rgba(255,250,238,.55);-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);font:600 .68rem/1.25 var(--f-serif);color:#5B4A2A}
+.todo small{display:block;font:600 .44rem var(--f-caps);letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:3px}
+.golden{position:absolute;inset:0;background:linear-gradient(180deg,#F4C9B3 0%,#E9C2CF 28%,#C9D6C5 52%,#A7CFD8 63%,#8FB39A 76%,#7E9F83 100%)}
+.dusk{position:absolute;inset:0;background:linear-gradient(180deg,#9C8BB8 0%,#D9A3B4 24%,#F2BE9E 40%,#B9B6B4 55%,#8FA7A8 64%,#6F8C76 80%,#5A7462 100%)}
+.kf{position:absolute;z-index:5;width:30%;height:auto;filter:drop-shadow(0 4px 4px rgba(40,50,40,.25));transform-origin:50% 90%;animation:bob 3.2s ease-in-out infinite}
+@keyframes bob{50%{transform:rotate(-3deg) translateY(-1px)}}
+.diya{position:absolute;z-index:5;width:6px;height:6px;border-radius:50%;background:#FFE3A1;box-shadow:0 0 10px 4px rgba(255,190,90,.75)}
+.mono{position:absolute;z-index:6;left:0;right:0;bottom:6%;text-align:center;font:500 1.5rem var(--f-serif);color:#3B342A;text-shadow:0 0 14px rgba(255,240,225,.9)}
+.mono i{color:#A8822F}
+
+/* ---------- the hornbill guide ---------- */
+.guide{position:absolute;left:0;top:0;width:118px;aspect-ratio:640/427;z-index:40;pointer-events:none;will-change:transform}
+.guide .tilt{position:absolute;inset:0;transition:transform .25s ease-out}
+.guide img{position:absolute;inset:0;width:100%;height:100%;filter:drop-shadow(0 6px 6px rgba(40,50,40,.25))}
+.guide .wb{transform-origin:46.9% 43.9%;transition:transform .35s ease-out}
+.guide .wf{transform-origin:50.8% 50.8%;transition:transform .35s ease-out}
+/* perched: wings drawn in towards the body */
+.guide:not(.flying) .wb{transform:rotate(34deg) scale(.62)}
+.guide:not(.flying) .wf{transform:rotate(-28deg) scale(.55)}
+.guide.flying .wb{animation:flapB .3s ease-in-out infinite alternate}
+.guide.flying .wf{animation:flapF .3s ease-in-out infinite alternate}
+@keyframes flapB{from{transform:rotate(12deg)}to{transform:rotate(-24deg) scaleY(.72)}}
+@keyframes flapF{from{transform:rotate(-14deg) scaleY(.8)}to{transform:rotate(22deg) scaleY(.68)}}
+.demo{position:relative;height:150px;border-radius:14px;overflow:hidden;background:linear-gradient(180deg,#B9D4E8,#F3D2C2)}
+.demo .guide{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%)}
+
+.budget{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:24px;align-items:start}
+@media (max-width:760px){.budget{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:20px;display:grid;gap:12px}
+.tbl{width:100%;border-collapse:collapse;font-size:1rem}
+.tbl td,.tbl th{padding:8px 6px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+.tbl th{font:600 .62rem var(--f-caps);letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+.tbl td:first-child{font:600 1rem var(--f-caps);color:var(--gold);width:2.2em}
+.tbl-wrap{overflow-x:auto}
+ul.need{margin:0;padding-left:1.1em;display:grid;gap:6px}
+.done{color:var(--sage)}
+.done::after{content:" ✓"}
+@media (prefers-reduced-motion:reduce){.guide.flying .wb,.guide.flying .wf,.kf{animation:none}}
+</style>
+
+<div class="wrap">
+  <header class="intro">
+    <p class="caps">Storyboard · Shreya &amp; Akshay · 16–17 Feb 2027</p>
+    <h1>The Road <em>to</em> Corbett</h1>
+    <p class="lede">One painted world, from dawn at the forest gate to dusk in your garden. Scene 1 is real, built art. Dashed gold boxes mark the art still to be painted. Scroll slowly: the hornbill guide flies with you, perches in each scene and flies back if you scroll up.</p>
+  </header>
+
+  <section class="rules" aria-label="Continuity rules">
+    <div class="rule"><b>One painted world</b><span>Pahari miniature on handmade paper, gold foil, pastels. No flat or velvet sections, no brass props.</span></div>
+    <div class="rule"><b>One card</b><span>Every word sits on the same ivory paper card with a double gold border.</span></div>
+    <div class="rule"><b>One guide</b><span>The hornbill flies between scenes and perches on a motif in each one.</span></div>
+    <div class="rule"><b>One clock</b><span>Dawn, morning, golden hour, dusk. It ends in the warm light of dusk, not night.</span></div>
+    <div class="rule"><b>Flowers throughout</b><span>A border in every scene, sprays on every card's corners, a hanging curtain at the venue, petals at the RSVP.</span></div>
+    <div class="rule"><b>Corbett's wildlife</b><span>Tiger at the gate, chital deer on the trail, kingfishers and a peacock at the venue, parakeets at dusk, the hornbill throughout.</span></div>
+  </section>
+
+  <section class="scene" aria-labelledby="g-h">
+    <div class="demo" aria-label="Live demo: the hornbill flapping">
+      <div class="guide flying" aria-hidden="true"><div class="tilt"><img class="wb" src="hornbill/wing-back.webp" alt=""><img src="hornbill/body.webp" alt=""><img class="wf" src="hornbill/wing-front.webp" alt=""></div></div>
+    </div>
+    <div class="notes">
+      <div class="meta"><span class="chip">Constant feature</span><span class="chip built">Flapping works now</span></div>
+      <h2 id="g-h">The hornbill guide</h2>
+      <ol class="beats">
+        <li>The existing hornbill is cut into a body and two wings, which flap from the shoulders while it flies. No new art is needed.</li>
+        <li>Each scene has a perch on one of its motifs: the arch tip, the jeep's garlanded bonnet, the venue's floral arch, the top of the RSVP card.</li>
+        <li>Scroll down and it flies forward, the same way as the jeep. Scroll up and it turns round and flies back to the previous perch.</li>
+        <li>When it lands, the wings fold in. One new image, a matching perched hornbill, makes the landing pose perfect.</li>
+      </ol>
+      <div class="blk"><h3>Art</h3><div class="art"><span class="reuse">hornbill body + wings (cut from existing)</span><span class="new">G · perched hornbill (on the wildlife sheet)</span></div></div>
+    </div>
+  </section>
+
+  <!-- 1 -->
+  <section class="scene" aria-labelledby="s1">
+    <div class="phone">
+      <img class="L" src="hero/sky.webp" alt="">
+      <img class="L" src="hero/hills.webp" alt="" style="top:-14%">
+      <img class="L" src="hero/forest.webp" alt="" style="top:6%">
+      <img class="L" src="hero/grass.webp" alt="" style="top:12%">
+      <img class="L fill" src="hero/frame.webp" alt="">
+      <p class="ph-k">Save the date</p>
+      <p class="ph-names"><span>Shreya</span><i>&amp;</i><span>Akshay</span></p>
+      <span class="perch" data-perch style="left:50%;top:15.5%"></span>
+    </div>
+    <div class="notes">
+      <div class="meta"><span class="chip">Scene 1</span><span class="chip">Dawn</span><span class="chip built">Built</span></div>
+      <h2 id="s1">Dawn at the forest gate</h2>
+      <ol class="beats">
+        <li>The paper diorama stands up like a pop-up book: hills, forest, grass with the tiger, then the velvet arch.</li>
+        <li>"Save the date · Shreya &amp; Akshay" rises in, with a gold-foil ampersand. The hornbill sits on the tip of the arch.</li>
+        <li>On scroll, the arch swings past, you walk into the forest, and the hornbill takes off ahead of you.</li>
+      </ol>
+      <div class="blk"><h3>Change</h3><p>The date card leaves this scene. The date arrives in scene 3, where the story reaches the venue.</p></div>
+      <div class="blk"><h3>Art</h3><div class="art"><span class="reuse">sky, hills, forest, grass + tiger, arch</span><span class="reuse">hornbill</span></div></div>
+    </div>
+  </section>
+
+  <!-- 2 -->
+  <section class="scene" aria-labelledby="s2">
+    <div class="phone">
+      <img class="L" src="hero/sky.webp" alt="">
+      <img class="L" src="hero/hills.webp" alt="" style="top:-14%">
+      <img class="L" src="hero/forest.webp" alt="" style="top:10%">
+      <div class="todo" style="left:6%;right:6%;top:3%;height:9%"><span><small>New · A</small>Forest-trail painting replaces this forest</span></div>
+      <div class="ph-card" style="top:16%">
+        <span class="c-k">Together with our families</span>
+        <span class="c-t">We, Shreya &amp; Akshay,<br>are getting married</span>
+        <img class="c-div" src="art/divider.webp" alt="">
+        <span class="c-s">Shreya, daughter of<br>Dr. Anju Garg &amp; Dr. Rakesh Garg</span>
+        <span class="c-s">Akshay, son of<br>Mrs. Mamta Jain &amp; Mr. Amit Jain</span>
+      </div>
+      <div class="todo" style="right:4%;top:49%;width:36%;height:11%"><span><small>New · G</small>Chital deer pair look up, then bound away</span></div>
+      <div class="todo" style="left:10%;right:10%;top:62%;height:16%"><span><small>New · B</small>Garlanded jeep · Akshay driving, Shreya beside him · drives left</span></div>
+      <span class="perch" data-perch style="left:24%;top:62.5%"></span>
+      <div class="todo" style="left:0;right:0;bottom:0;height:13%;border-radius:0"><span><small>New · D</small>Flower border: marigold, roses, jasmine, lotus</span></div>
+    </div>
+    <div class="notes">
+      <div class="meta"><span class="chip">Scene 2</span><span class="chip">Morning</span><span class="chip">Scroll 100–220%</span></div>
+      <h2 id="s2">The journey</h2>
+      <ol class="beats">
+        <li>The hero's forest melts into the trail painting while the camera keeps moving, so the two forests blend.</li>
+        <li>The hornbill lands on the bonnet's marigold garland as your jeep drives in from the right, with wheel bounce and a dust puff, and eases to a stop.</li>
+        <li>The paper card rises: "Together with our families · We, Shreya &amp; Akshay, are getting married", then Shreya, daughter of Dr. Anju Garg &amp; Dr. Rakesh Garg, and Akshay, son of Mrs. Mamta Jain &amp; Mr. Amit Jain.</li>
+        <li>A pair of chital deer at the edge of the trail lift their heads as the jeep passes, then bound off into the trees. Butterflies drift over the flower border.</li>
+        <li>The hornbill takes off and the jeep follows it out to the left. The flower border drifts faster than the trail.</li>
+      </ol>
+      <div class="blk"><h3>Art</h3><div class="art"><span class="new">A · forest trail</span><span class="new">B · jeep with you two</span><span class="new">D · flower border + petals</span><span class="new">G · chital deer, butterflies</span><span class="new">H · card flower sprays</span><span class="reuse">gold divider</span></div></div>
+    </div>
+  </section>
+
+  <!-- 3 -->
+  <section class="scene" aria-labelledby="s3">
+    <div class="phone">
+      <div class="golden"></div>
+      <div class="todo" style="left:5%;right:5%;top:40%;height:44%"><span><small>New · C</small>Your venue at golden hour, painted from Hridayesh: white two-storey villas with arched verandas among mango trees, the green wedding lawn under old shade trees, a floral arch and marigold strings, and the clear boulder-strewn river flowing beside the lawn, with the Shivalik hills behind</span></div>
+      <span class="perch" data-perch style="left:50%;top:52%"></span>
+      <img class="kf" src="art/kingfishers.webp" alt="" style="left:4%;top:71%">
+      <div class="todo" style="right:4%;top:69%;width:32%;height:13%"><span><small>New · G</small>Peacock on the lawn</span></div>
+      <div class="todo" style="left:0;right:0;top:0;height:12%;border-radius:0"><span><small>New · E</small>Hanging flower curtain (toran) drops in</span></div>
+      <div class="ph-card" style="top:15%;left:14%;right:14%">
+        <span class="c-k">Save the date</span>
+        <span class="c-t" style="font-size:1.25rem">16 &amp; 17 February 2027</span>
+        <span class="c-s">Jim Corbett, Uttarakhand</span>
+        <div class="c-btns"><span>Google Calendar</span><span>Apple · Outlook</span></div>
+      </div>
+      <div class="todo" style="left:0;right:0;bottom:0;height:11%;border-radius:0"><span><small>Reuse · D</small>Flower border</span></div>
+    </div>
+    <div class="notes">
+      <div class="meta"><span class="chip">Scene 3</span><span class="chip">Golden hour</span><span class="chip">Scroll 220–340%</span></div>
+      <h2 id="s3">Arrival at the venue</h2>
+      <ol class="beats">
+        <li>The camera follows the jeep round the bend. The trail slides away left and your venue opens up.</li>
+        <li>The flower curtain drops from the top like a toran and sways once.</li>
+        <li>Gold glints run along the river, and the camera drifts across the lawn to the villas. The hornbill settles on the floral arch.</li>
+        <li>A pair of kingfishers sits on a branch over the water, a couple of their own. They bob and turn to look at each other as you scroll.</li>
+        <li>A peacock steps across the lawn and, at the card's arrival, lifts and fans its tail once.</li>
+        <li>The card arrives with the dates and Add to Calendar. The venue is shown but never named.</li>
+      </ol>
+      <div class="blk"><h3>Art</h3><div class="art"><span class="new">C · venue painting</span><span class="new">E · flower curtain</span><span class="new">G · peacock</span><span class="reuse">flower border</span><span class="reuse">kingfisher pair</span></div></div>
+    </div>
+  </section>
+
+  <!-- 4 -->
+  <section class="scene" aria-labelledby="s4">
+    <div class="phone">
+      <div class="dusk"></div>
+      <div class="todo" style="left:5%;right:5%;top:46%;height:38%;background:rgba(255,236,220,.35)"><span><small>Same art · C at dusk</small>The same venue painting, warmed to dusk with lighting. No new art, so it stays exactly your venue</span></div>
+      <div class="todo" style="left:0;right:0;top:0;height:10%;border-radius:0"><span><small>Reuse · E</small>Flower curtain stays</span></div>
+      <i class="diya" style="left:16%;top:74%"></i><i class="diya" style="left:30%;top:77%"></i><i class="diya" style="left:46%;top:79%"></i><i class="diya" style="left:62%;top:77%"></i><i class="diya" style="left:78%;top:74%"></i>
+      <div class="ph-card" style="top:14%">
+        <span class="c-k">Kindly respond by 24 November</span>
+        <span class="c-t">Will you join us?</span>
+        <span class="c-lbl">Your name</span><div class="c-fld"></div>
+        <div class="c-seg"><span>Joyfully accept</span><span>Regretfully decline</span></div>
+        <span class="c-lbl">Phone (optional)</span><div class="c-fld"></div>
+        <div class="c-send">Send RSVP</div>
+      </div>
+      <span class="perch" data-perch style="left:80%;top:14%"></span>
+      <img class="kf" src="art/kingfishers.webp" alt="" style="left:4%;top:66%;width:26%">
+      <div class="todo" style="left:36%;right:5%;top:58%;height:7%"><span><small>New · G</small>Parakeets fly home across the dusk sky</span></div>
+      <p class="mono">S <i>&amp;</i> A</p>
+    </div>
+    <div class="notes">
+      <div class="meta"><span class="chip">Scene 4</span><span class="chip">Dusk</span><span class="chip">Scroll 340–420%, then the RSVP</span></div>
+      <h2 id="s4">Dusk in the garden</h2>
+      <ol class="beats">
+        <li>The sky over your venue warms to a lavender-and-peach dusk. Diyas light up one by one along the garden path, and the first fireflies rise.</li>
+        <li>The RSVP card rises under the flower curtain and the hornbill perches on its top corner: name, joyfully accept or regretfully decline, guests, then phone and email (both optional).</li>
+        <li>The kingfishers are still on their branch, now in the dusk light, so the place carries on unchanged. A small flock of parakeets flies home across the sky.</li>
+        <li>On accept, marigold petals fall and the diyas glow brighter: "We can't wait to celebrate with you."</li>
+        <li>The story closes on S &amp; A in the dusk light.</li>
+      </ol>
+      <div class="blk"><h3>Removed</h3><p>The brass lantern (off-theme) and the night sky. The story ends at dusk.</p></div>
+      <div class="blk"><h3>Art</h3><div class="art"><span class="reuse">venue painting (dusk grade)</span><span class="reuse">flower curtain</span><span class="reuse">kingfisher pair</span><span class="new">G · parakeets</span><span class="reuse">petals from D</span></div></div>
+    </div>
+  </section>
+
+  <section class="budget" aria-labelledby="b-h">
+    <div class="panel">
+      <p class="caps">Art budget</p>
+      <h2 id="b-h">7 Figma images, generated once</h2>
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <thead><tr><th></th><th>Asset</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>A</td><td>Forest trail, morning</td><td>Ready</td></tr>
+            <tr><td>B</td><td>Forest-green garlanded jeep with you two</td><td>Ready (photos in)</td></tr>
+            <tr><td>C</td><td>Hridayesh at golden hour</td><td>Ready (website photos)</td></tr>
+            <tr><td>D</td><td>Flower border + loose petals</td><td>Ready</td></tr>
+            <tr><td>E</td><td>Hanging flower curtain</td><td>Ready</td></tr>
+            <tr><td>G</td><td>Wildlife sheet: chital pair, peacock, perched hornbill, kingfishers, parakeets, butterflies</td><td>Ready</td></tr>
+            <tr><td>H</td><td>Flower sheet: corner sprays, marigold strand, lotus, jasmine, palash</td><td>Ready</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="color:var(--muted);font-size:1rem">G and H are sheets of separate stickers in one image each, cut apart afterwards, so seven animals and a whole flower kit cost two credits.</p>
+      <p style="color:var(--muted);font-size:1rem">Plus 1–2 retries if a piece misses. Free reuse: the hero, the hornbill (now flapping), the kingfisher pair (cut from the sticker sheet) and the gold divider. Retired: the brass lantern, the velvet texture and the sal sprig.</p>
+    </div>
+    <div class="panel">
+      <p class="caps">Before we generate</p>
+      <ul class="need">
+        <li class="done">Venue reference (Hridayesh website)</li>
+        <li class="done">Photos of you two</li>
+        <li class="done">Parents' names</li>
+        <li class="done">No Ganesha blessing</li>
+        <li class="done">Forest-green jeep</li>
+        <li class="done">RSVP by 24 November</li>
+        <li class="done">Phone and email both optional</li>
+        <li class="done">Grandparents' line skipped for now</li>
+      </ul>
+    </div>
+  </section>
+</div>
+
+<div class="guide" id="guide" aria-hidden="true"><div class="tilt"><img class="wb" src="hornbill/wing-back.webp" alt=""><img src="hornbill/body.webp" alt=""><img class="wf" src="hornbill/wing-front.webp" alt=""></div></div>
+
+<script>
+(() => {
+  // The guide flies to the perch of whichever scene is nearest the middle of the screen,
+  // faces the way you scroll (down = forward = left, like the jeep), and folds its wings when it lands.
+  const bird = document.getElementById('guide');
+  const tilt = bird.querySelector('.tilt');
+  const perches = [...document.querySelectorAll('[data-perch]')];
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let pos = null, facing = -1, lastY = scrollY;
+
+  const point = (el) => { const r = el.getBoundingClientRect(); return { x: r.left + scrollX, y: r.top + scrollY }; };
+  const target = () => {
+    const mid = scrollY + innerHeight * 0.5;
+    let best = null, bd = Infinity;
+    for (const p of perches) { const pt = point(p); const d = Math.abs(pt.y - mid); if (d < bd) { bd = d; best = pt; } }
+    return best;
+  };
+  addEventListener('scroll', () => {
+    const dy = scrollY - lastY;
+    if (Math.abs(dy) > 2) facing = dy > 0 ? -1 : 1;
+    lastY = scrollY;
+  }, { passive: true });
+
+  const W = () => bird.offsetWidth, H = () => bird.offsetHeight;
+  const frame = () => {
+    const t = target();
+    if (t) {
+      if (!pos || reduce) pos = { ...t };
+      const dx = t.x - pos.x, dy = t.y - pos.y, dist = Math.hypot(dx, dy);
+      if (dist > 0.5) { pos.x += dx * 0.055; pos.y += dy * 0.055 + (dist > 40 ? -Math.min(dist, 400) * 0.012 : 0); }
+      const flying = dist > 8;
+      bird.classList.toggle('flying', flying);
+      // feet sit on the perch: anchor at ~58% across, ~70% down the sprite
+      bird.style.transform = `translate(${pos.x - W() * 0.58}px, ${pos.y - H() * 0.7}px)`;
+      tilt.style.transform = `scaleX(${facing}) rotate(${flying ? Math.max(-14, Math.min(14, dy * -0.04)) : 0}deg)`;
+    }
+    requestAnimationFrame(frame);
+  };
+  requestAnimationFrame(frame);
+})();
+</script>

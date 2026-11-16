@@ -1,0 +1,22 @@
+# v2 · transition 1: forest → river with road → resort across the water
+
+## Brief (from the couple)
+- Follow the river that flows toward us at the bottom centre of the forest frame (it leaves the bottom edge at about 35–65% of the width, between tall grass, with the tiger on the left).
+- The next frame's river must be closer to the screen, with a road on the near bank that the jeep drives on, and the resort (cottages) on the other side of the water.
+- No fading transitions of any kind. Motion is physical: position and scale, with occluders.
+- No reflections of text on the water.
+
+## Transition technique (motion-design skill: premium personality, fluid-material timing, three layers)
+- **Primary, a camera dolly along the river:** scale every forest layer toward the river's exit point (transform-origin ≈ 50% 88%). Parallax by depth: grass 1.8× and fastest, forest 2.6×, hills 1.3×. The grass and tiger also slide out to their own side (left pieces left, right pieces right, ease `power2.in`), so the near grass parts around us like the jungle opening.
+- **Hand-off, a match cut on water hidden behind an occluder:** at the deepest point of the dolly, the screen's lower half is forest-river water. The new frame's river layer sits behind, already scaled up around the same point, so the water lines up. At that exact moment a foreground sweep crosses the frame (tall-grass and reed pieces from `public/v2/leaves/` plus `seam-rapids.webp` rushing up from the bottom edge, near-depth speed). Behind it, the forest layers are switched for the new frame. No opacity tween anywhere.
+- **Settle, the dolly continues out:** the new frame scales from about 2.4× back down to 1× (sine `inOut`, about 1.5× fluid duration). The banks open toward the bottom corners, the road appears on the left bank, and the far bank with the cottages comes into view across the water.
+- **Secondary:** the hornbill flies down the river corridor ahead of the camera, following the water's centreline instead of zigzagging. The gold glints on the water drift toward us with the scroll.
+- **Ambient:** fireflies, the water shimmer, and the kingfisher bob.
+- **Jeep:** it drives on the painted road along the left bank, away from us toward the far waterline, scaling down with depth on a MotionPath traced from the painted road.
+
+## Image to generate (1 credit; the sky, hills and cottage bank are reused)
+`river-road` (cut-out on magenta, 1152×2048 portrait):
+
+> Isolated foreground layer for a layered paper pop-up diorama, seen straight on from a low viewpoint standing on a riverbank in Jim Corbett at golden hour. Everything above a soft, straight, horizontal far waterline at exactly 40% of the image height is a perfectly flat, solid, pure magenta color #FF00FF with no texture, gradient, sky, hills, trees or buildings. Below that line, a wide, clear, gently flowing river fills the full width at the far waterline and flows toward the viewer down the image, with soft ripples, fine gold-foil glints, a long warm streak of low sunlight down its centre, a few smooth grey boulders and small white rapids near the bottom; the water leaves the bottom edge between 25% and 80% of the width. In the LEFT lower corner, a near riverbank wedges in from the left edge: a clearly visible sandy jeep track, wide enough for a vehicle, runs along the water's edge from the bottom-left corner up and away into the distance, getting narrower, until it meets the far waterline at about 20% of the image width; the track is bordered on its outer side by tall golden grass, small wildflowers, ferns and a few boulders. In the RIGHT lower corner, a narrow strip of reeds, ferns and smooth stones along the water, from the bottom-right corner up to the far waterline. Late-afternoon light from the upper right, long soft shadows to the lower left. No vehicles, no people, no animals, no buildings, no bridges, no white border, no outline, painted directly. Painted in a refined Indian Pahari miniature gouache style on textured handmade cotton paper, fine gold-foil accents, soft pastel palette of pale aqua, powder blue, golden ochre, sage, ivory and antique gold, matching a layered paper pop-up diorama. Elegant premium stationery craftsmanship, not cartoonish. No text, no letters, no watermark.
+
+Stacking in the frame: `resort-sky` (sky and hills) → `resort-bank` (cottages and garden, its stone wall at 72% of its height) → `river-road`, positioned so its far waterline (40%) sits exactly on the bank's wall.

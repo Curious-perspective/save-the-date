@@ -1,0 +1,438 @@
+<title>Shreya &amp; Akshay Moodboards</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Shantell+Sans:wght,BNCE,INFM@400..800,0..100,0..100&family=Gaegu:wght@400;700&family=Young+Serif&family=Mulish:wght@400;600;700&display=swap">
+<style>
+/* Layout: one narrow phone-width column per concept, each concept painted in its own world; the shell stays quiet. */
+:root{
+  color-scheme: light;
+  --shell:#F3F4F0; --shell-ink:#22252A; --shell-muted:#666A70; --shell-line:#DCDFD7;
+  --f-shell:"Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
+  /* A — Passing Notes */
+  --a-paper:#FDFCF6; --a-rule:#C9DDF0; --a-margin:#EFA3A3; --a-ink:#2B3A8C;
+  --a-butter:#FFE08A; --a-sky:#A9D6F5; --a-pink:#F7B5CF; --a-mint:#B8E6CF;
+  --f-a-display:"Shantell Sans", "Comic Sans MS", ui-rounded, system-ui, sans-serif;
+  --f-a-hand:"Gaegu", "Shantell Sans", ui-rounded, cursive;
+  /* B — Permit to the Wild */
+  --b-mist:#EEF3EC; --b-sage:#A9C3A2; --b-fern:#5F8A6A; --b-peach:#F6C9B4;
+  --b-river:#B9D7E3; --b-bark:#4A3B32; --b-butter:#F5E3A3;
+  --f-b-display:"Young Serif", Georgia, "Times New Roman", serif;
+  --f-b-body:"Mulish", ui-sans-serif, system-ui, sans-serif;
+}
+*{box-sizing:border-box}
+body{background:var(--shell);color:var(--shell-ink);font:16px/1.55 var(--f-shell);margin:0}
+.wrap{max-width:1120px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:40px 64px;display:grid;gap:48px}
+header.intro{display:grid;gap:10px;max-width:62ch}
+.eyebrow{font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;color:var(--shell-muted);font-weight:600}
+h1{font-size:clamp(2rem,6vw,3.4rem);line-height:1.02;margin:0;font-weight:800;text-wrap:balance}
+.intro p{margin:0;color:var(--shell-muted)}
+.concept{display:grid;grid-template-columns:minmax(0,380px) minmax(0,1fr);gap:32px;align-items:start}
+@media (max-width:860px){.concept{grid-template-columns:minmax(0,1fr)}}
+.phone{border-radius:28px;overflow:hidden;border:1px solid var(--shell-line);max-width:380px;width:100%;justify-self:center;box-shadow:0 30px 60px -30px rgba(34,37,42,.35)}
+.notes{display:grid;gap:22px;min-width:0}
+.notes h2{margin:0;font-size:clamp(1.6rem,4vw,2.3rem);line-height:1.05;text-wrap:balance}
+.notes .pitch{margin:0;font-size:1.1rem;color:var(--shell-muted);max-width:56ch}
+.block{display:grid;gap:10px}
+.block h3{margin:0;font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;color:var(--shell-muted);font-weight:600}
+.swatches{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px}
+.sw{display:grid;gap:6px;font-size:.8rem}
+.sw i{display:block;height:54px;border-radius:12px;border:1px solid rgba(0,0,0,.06)}
+.sw b{font-weight:600}
+.sw span{color:var(--shell-muted);font-variant-numeric:tabular-nums}
+ol.beats{margin:0;padding-left:1.3em;display:grid;gap:8px;max-width:62ch}
+ol.beats li::marker{font-weight:700}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chips span{border:1px solid var(--shell-line);background:#fff;border-radius:999px;padding:4px 12px;font-size:.85rem}
+.typespec{display:grid;gap:4px;background:#fff;border:1px solid var(--shell-line);border-radius:16px;padding:16px}
+.divider{height:1px;background:var(--shell-line)}
+.small{font-size:.85rem;color:var(--shell-muted)}
+
+/* ---------- A: Passing Notes ---------- */
+.a-screen{background:
+  linear-gradient(90deg,transparent 38px,var(--a-margin) 38px,var(--a-margin) 40px,transparent 40px),
+  repeating-linear-gradient(180deg,var(--a-paper) 0 27px,var(--a-rule) 27px 28px);
+  color:var(--a-ink);padding:28px 22px 30px 52px;display:grid;gap:22px;font-family:var(--f-a-hand)}
+.a-names{font-family:var(--f-a-display);font-variation-settings:"BNCE" 60,"INFM" 70;font-weight:800;font-size:2.2rem;line-height:1;margin:0;text-wrap:balance}
+.a-names em{font-style:normal;background:var(--a-butter);padding:0 .15em;border-radius:6px}
+.a-sub{font-size:1.25rem;margin:0}
+.kids{width:100%;height:auto;max-width:100%}
+.stage{perspective:900px;display:grid;justify-items:center;gap:8px}
+.chit{position:relative;width:250px;height:300px;cursor:pointer;outline:none}
+.chit:focus-visible{outline:3px dashed var(--a-ink);outline-offset:6px;border-radius:6px}
+.sheet-half{position:absolute;left:0;right:0;height:50%;background:var(--a-paper);
+  background-image:repeating-linear-gradient(180deg,transparent 0 21px,var(--a-rule) 21px 22px);
+  padding:14px 16px;font-size:1.15rem;line-height:22px;box-shadow:0 1px 0 rgba(0,0,0,.04)}
+.sheet-bottom{top:50%;border-radius:0 0 4px 4px;box-shadow:0 10px 22px -12px rgba(43,58,140,.45)}
+.flap{position:absolute;left:0;right:0;top:50%;height:50%;transform-origin:top center;transform-style:preserve-3d;transition:transform .9s cubic-bezier(.3,1.4,.5,1)}
+.chit[aria-expanded="true"] .flap{transform:rotateX(180deg)}
+.face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.face-out{background:#FFF7D6;border-radius:0 0 4px 4px;display:grid;place-items:center;text-align:center;font-size:1.3rem;padding:12px;box-shadow:0 12px 24px -12px rgba(43,58,140,.5);
+  background-image:radial-gradient(circle at 85% 20%,var(--a-pink) 0 10px,transparent 11px)}
+.face-in{transform:rotateX(180deg)}
+.face-in .sheet-half{position:absolute;inset:0;height:auto;border-radius:4px 4px 0 0}
+.tick{display:inline-flex;gap:14px;margin-top:4px}
+.tick label{display:inline-flex;gap:6px;align-items:center;cursor:pointer}
+.tick input{appearance:none;width:18px;height:18px;border:2px solid var(--a-ink);border-radius:3px;display:grid;place-items:center;margin:0;background:#fff}
+.tick input:checked{background:var(--a-mint)}
+.tick input:checked::after{content:"";width:6px;height:11px;border:solid var(--a-ink);border-width:0 3px 3px 0;transform:rotate(40deg) translate(-1px,-1px)}
+.tick input:focus-visible{outline:2px dashed var(--a-ink);outline-offset:3px}
+.hint{font-size:1.05rem;opacity:.75}
+.scratch{position:relative;width:100%;max-width:260px;height:86px;border-radius:12px;overflow:hidden;background:var(--a-sky);display:grid;place-items:center;text-align:center;font-family:var(--f-a-display);font-weight:800;font-size:1.45rem;line-height:1.1;touch-action:none}
+.scratch canvas{position:absolute;inset:0;width:100%;height:100%;cursor:crosshair}
+.timetable{display:grid;grid-template-columns:auto 1fr;gap:0;border:2px solid var(--a-ink);border-radius:8px;overflow:hidden;font-size:1.15rem;background:var(--a-paper)}
+.timetable div{padding:4px 10px;border-bottom:1.5px solid var(--a-rule)}
+.timetable div:nth-child(odd){background:var(--a-pink);font-weight:700}
+.timetable div:nth-last-child(-n+2){border-bottom:0}
+
+/* ---------- B: Permit to the Wild ---------- */
+.b-screen{background:var(--b-mist);color:var(--b-bark);font-family:var(--f-b-body);display:grid}
+.forest{position:relative;height:340px;overflow:hidden;background:linear-gradient(180deg,#F9E4D6 0%,var(--b-peach) 38%,#E9EEDC 72%,var(--b-mist) 100%)}
+.forest svg.layer{position:absolute;left:-6%;width:112%;bottom:0;height:100%;will-change:transform;transition:transform .25s ease-out}
+.sun{position:absolute;width:86px;height:86px;border-radius:50%;background:#FFF1C9;left:58%;top:58px;box-shadow:0 0 60px 30px rgba(255,241,201,.6)}
+.forest-title{position:absolute;inset:auto 0 22px 0;text-align:center;z-index:5;display:grid;gap:2px}
+.forest-title .k{font-size:.72rem;letter-spacing:.24em;text-transform:uppercase;font-weight:700}
+.forest-title h4{font-family:var(--f-b-display);font-weight:400;font-size:2.3rem;line-height:1;margin:0}
+.fly{position:absolute;width:5px;height:5px;border-radius:50%;background:#FFF6B8;box-shadow:0 0 10px 3px rgba(255,240,150,.85);z-index:4;animation:drift 7s ease-in-out infinite alternate,blink 2.4s ease-in-out infinite}
+@keyframes drift{to{transform:translate(var(--dx),var(--dy))}}
+@keyframes blink{50%{opacity:.15}}
+.b-body{padding:24px 20px 30px;display:grid;gap:18px}
+.b-names{font-family:var(--f-b-display);font-size:2rem;line-height:1.05;margin:0;text-align:center;text-wrap:balance}
+.b-names small{display:block;font-family:var(--f-b-body);font-size:.8rem;letter-spacing:.18em;text-transform:uppercase;margin-bottom:6px;color:var(--b-fern);font-weight:700}
+.permit{position:relative;background:#FFFDF7;border:1.5px solid var(--b-bark);border-radius:14px;padding:16px 16px 14px;display:grid;gap:10px;
+  background-image:radial-gradient(circle at 0 50%,var(--b-mist) 0 10px,transparent 11px),radial-gradient(circle at 100% 50%,var(--b-mist) 0 10px,transparent 11px)}
+.permit .head{display:flex;justify-content:space-between;gap:8px;font-size:.7rem;letter-spacing:.16em;text-transform:uppercase;font-weight:700;color:var(--b-fern);border-bottom:1px dashed var(--b-sage);padding-bottom:8px}
+.permit dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:.92rem}
+.permit dt{color:#7C6E64}
+.permit dd{margin:0;font-weight:700}
+.permit button{justify-self:start;font:700 .95rem var(--f-b-body);background:var(--b-fern);color:#fff;border:0;border-radius:999px;padding:10px 18px;cursor:pointer}
+.permit button:focus-visible{outline:3px solid var(--b-bark);outline-offset:3px}
+.stamp{position:absolute;right:14px;top:44px;border:3px solid #C2583F;color:#C2583F;border-radius:10px;padding:6px 10px;font:800 1rem/1.1 var(--f-b-body);letter-spacing:.08em;text-transform:uppercase;text-align:center;transform:rotate(-12deg) scale(2.4);opacity:0;pointer-events:none;mix-blend-mode:multiply}
+.stamp small{display:block;font-size:.62rem;letter-spacing:.14em}
+.permit.stamped .stamp{animation:thud .45s cubic-bezier(.2,1.6,.4,1) forwards}
+.permit.stamped{animation:shake .35s .25s}
+@keyframes thud{to{transform:rotate(-12deg) scale(1);opacity:.92}}
+@keyframes shake{30%{transform:translate(1px,2px) rotate(.4deg)}60%{transform:translate(-1px,-1px)}}
+.sign{display:flex;justify-content:center}
+.sign svg{width:220px;max-width:100%;height:auto}
+
+/* ---------- C ---------- */
+.hybrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;align-items:stretch}
+@media (max-width:640px){.hybrid{grid-template-columns:minmax(0,1fr)}}
+.hybrid div{border-radius:16px;padding:16px;display:grid;gap:6px;align-content:start;min-width:0}
+.hybrid b{font-size:1.05rem}
+.h1{background:var(--a-paper);color:var(--a-ink);border:1px solid var(--a-rule);font-family:var(--f-a-hand);font-size:1.15rem}
+.h2{background:linear-gradient(135deg,var(--a-sky),var(--b-sage));color:#223}
+.h3{background:var(--b-mist);color:var(--b-bark);border:1px solid var(--b-sage)}
+
+@media (prefers-reduced-motion:reduce){
+  .fly{animation:none}
+  .flap,.forest svg.layer{transition:none}
+  .permit.stamped .stamp{animation:none;opacity:.92;transform:rotate(-12deg) scale(1)}
+  .permit.stamped{animation:none}
+}
+</style>
+
+<div class="wrap">
+  <header class="intro">
+    <span class="eyebrow">Save the date · moodboards · 16–17 Feb 2027</span>
+    <h1>Two ways to tell Shreya &amp; Akshay's story</h1>
+    <p>Each phone below is a working sketch of the opening, not the final art. Tap the note, scratch the date, tilt or drag across the forest and stamp the permit. Final illustrations would be drawn from your couple photos in one consistent style.</p>
+  </header>
+
+  <!-- ================= A ================= -->
+  <section class="concept" aria-labelledby="a-title">
+    <div class="phone">
+      <div class="a-screen">
+        <svg class="kids" viewBox="0 0 280 110" aria-label="Doodle of two school kids holding hands" role="img">
+          <defs>
+            <filter id="boil"><feTurbulence id="turb" type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed="1"/><feDisplacementMap in="SourceGraphic" scale="3.2"/></filter>
+          </defs>
+          <g filter="url(#boil)" fill="none" stroke="#2B3A8C" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="90" cy="28" r="14" fill="#F7B5CF"/>
+            <path d="M90 42v30M90 50l-16 14M90 50l22 10M90 72l-12 24M90 72l12 24"/>
+            <rect x="70" y="46" width="14" height="18" rx="3" fill="#FFE08A"/>
+            <circle cx="150" cy="30" r="13" fill="#A9D6F5"/>
+            <path d="M150 43v29M150 51l-38 9M150 51l16 14M150 72l-11 24M150 72l11 24"/>
+            <rect x="156" y="47" width="14" height="18" rx="3" fill="#B8E6CF"/>
+            <path d="M205 70c10-18 30-18 40 0-10 6-30 6-40 0z" fill="#FFE08A"/>
+            <path d="M205 70l40 0M222 52l3 18" />
+            <path d="M18 100h250" stroke-dasharray="2 7"/>
+          </g>
+        </svg>
+        <p class="a-names">Shreya <em>&amp;</em> Akshay</p>
+        <p class="a-sub">are getting married!</p>
+
+        <div class="stage">
+          <div class="chit" id="chit" role="button" tabindex="0" aria-expanded="false" aria-label="Folded note. Tap to open.">
+            <div class="sheet-half sheet-bottom">
+              Now we're getting married, and you're invited to Jim Corbett.<br>
+              Will you come?
+              <div class="tick">
+                <label><input type="checkbox" id="a-yes"> Yes</label>
+                <label><input type="checkbox" id="a-no"> No</label>
+              </div>
+            </div>
+            <div class="flap">
+              <div class="face face-out"><span>To: you<br><small>pass it on, don't let Ma'am see →</small><br><b>tap to open</b></span></div>
+              <div class="face face-in"><div class="sheet-half">Dear you,<br>We've been passing notes since school. This is the most important one.<br>— S &amp; A</div></div>
+            </div>
+          </div>
+          <span class="hint" id="chit-hint">tap the note</span>
+        </div>
+
+        <div class="scratch" aria-label="Scratch card hiding the dates: 16 and 17 February 2027">
+          <span>16 &amp; 17 Feb 2027<br><small style="font-size:.9rem">Jim Corbett</small></span>
+          <canvas id="scratch" width="520" height="172" aria-hidden="true"></canvas>
+        </div>
+
+        <div class="timetable" aria-label="Timetable-style calendar">
+          <div>Tue</div><div>16 Feb 2027 · Day 1</div>
+          <div>Wed</div><div>17 Feb 2027 · Day 2</div>
+          <div>Venue</div><div>Jim Corbett (more soon)</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="notes">
+      <span class="eyebrow">Concept A · childhood friends to married couple</span>
+      <h2 id="a-title">Passing Notes</h2>
+      <p class="pitch">It started with notes passed under the desk. The save-the-date is the last one: a folded chit that guests unfold and tick.</p>
+
+      <div class="block">
+        <h3>Story as you scroll</h3>
+        <ol class="beats">
+          <li>A folded chit lands on a ruled notebook page. Tap to unfold it; the paper creases open in 3D.</li>
+          <li>Margin doodles grow up as you scroll: two kids with school bags, then bicycles, then exam-hall nerves, then the two of you, drawn from your photos.</li>
+          <li>The dates sit under a crayon scratch card, like the ones from the school canteen. Scratch to reveal 16 &amp; 17 Feb.</li>
+          <li>"Mark your calendar" is a school timetable. One tap adds both days to Google or Apple Calendar.</li>
+          <li>The RSVP is the chit itself: name, tick Yes or No, number of guests, phone. On send it folds into a paper plane and flies off.</li>
+        </ol>
+      </div>
+
+      <div class="block">
+        <h3>Palette: crayon pastels on notebook paper</h3>
+        <div class="swatches">
+          <div class="sw"><i style="background:var(--a-paper)"></i><b>Notebook</b><span>#FDFCF6</span></div>
+          <div class="sw"><i style="background:var(--a-ink)"></i><b>Ballpoint blue</b><span>#2B3A8C</span></div>
+          <div class="sw"><i style="background:var(--a-margin)"></i><b>Margin red</b><span>#EFA3A3</span></div>
+          <div class="sw"><i style="background:var(--a-butter)"></i><b>Butter crayon</b><span>#FFE08A</span></div>
+          <div class="sw"><i style="background:var(--a-sky)"></i><b>Sky crayon</b><span>#A9D6F5</span></div>
+          <div class="sw"><i style="background:var(--a-pink)"></i><b>Bubblegum</b><span>#F7B5CF</span></div>
+          <div class="sw"><i style="background:var(--a-mint)"></i><b>Mint</b><span>#B8E6CF</span></div>
+        </div>
+      </div>
+
+      <div class="block">
+        <h3>Type</h3>
+        <div class="typespec" style="color:var(--a-ink)">
+          <span style="font-family:var(--f-a-display);font-variation-settings:'BNCE' 60,'INFM' 70;font-weight:800;font-size:1.8rem;line-height:1.1">Shreya &amp; Akshay</span>
+          <span style="font-family:var(--f-a-hand);font-size:1.3rem">Handwritten notes, ticks and margin scribbles</span>
+          <span class="small">Shantell Sans (bouncy, hand-lettered headings) · Gaegu (ballpoint handwriting)</span>
+        </div>
+      </div>
+
+      <div class="block">
+        <h3>Motion vocabulary</h3>
+        <div class="chips"><span>Line boil on doodles (hand-drawn jitter)</span><span>3D paper folds</span><span>Stepped, stop-motion easing</span><span>Scratch-to-reveal</span><span>Paper-plane exit</span><span>Doodles drawing themselves on scroll</span></div>
+      </div>
+      <p class="small">Illustrations needed: the two of you as kids and as adults, in pencil-and-crayon style, plus 4–6 small doodles.</p>
+    </div>
+  </section>
+
+  <div class="divider" role="presentation"></div>
+
+  <!-- ================= B ================= -->
+  <section class="concept" aria-labelledby="b-title">
+    <div class="phone">
+      <div class="b-screen">
+        <div class="forest" id="forest" aria-label="Illustrated forest at dawn with fireflies; moves when you drag or tilt" role="img">
+          <div class="sun" data-depth="0.08"></div>
+          <div class="forest-title"><span class="k">Save the date</span><h4>Into the wild</h4></div>
+        </div>
+        <div class="b-body">
+          <p class="b-names"><small>We're getting married</small>Shreya &amp; Akshay</p>
+          <div class="sign">
+            <svg viewBox="0 0 220 120" role="img" aria-label="Wooden trail sign reading 16 and 17 February 2027, Jim Corbett">
+              <rect x="104" y="40" width="10" height="80" fill="#4A3B32"/>
+              <path d="M18 14h170l22 18-22 18H18z" fill="#C9A27E" stroke="#4A3B32" stroke-width="2"/>
+              <text x="100" y="38" text-anchor="middle" font-family="Young Serif, Georgia, serif" font-size="19" fill="#4A3B32">16 – 17 Feb 2027</text>
+              <path d="M30 60h160v26H30z" fill="#B48A66" stroke="#4A3B32" stroke-width="2"/>
+              <text x="110" y="78" text-anchor="middle" font-family="Mulish, sans-serif" font-weight="700" font-size="11" letter-spacing="2" fill="#FFFDF7">JIM CORBETT</text>
+            </svg>
+          </div>
+          <div class="permit" id="permit">
+            <div class="head"><span>Wedding entry permit</span><span>No. 1602-27</span></div>
+            <dl>
+              <dt>Permit holder</dt><dd>You &amp; family</dd>
+              <dt>Zone</dt><dd>Jim Corbett, Uttarakhand</dd>
+              <dt>Valid</dt><dd>16–17 February 2027</dd>
+            </dl>
+            <button type="button" id="stampBtn">Stamp my RSVP</button>
+            <div class="stamp" aria-hidden="true">Entry confirmed<small>See you in the jungle</small></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="notes">
+      <span class="eyebrow">Concept B · Jim Corbett, romantic and botanical</span>
+      <h2 id="b-title">Permit to the Wild</h2>
+      <p class="pitch">Every guest gets an entry permit to the jungle where you say yes. The page is a walk from dawn mist to the two of you under a sal tree.</p>
+
+      <div class="block">
+        <h3>Story as you scroll</h3>
+        <ol class="beats">
+          <li>A safari-style entry permit with the guest's name on it (generic now, personalised once you have the list). Tap and the forest gate swings open.</li>
+          <li>Dawn forest in layers that shift as the guest tilts their phone: sal trees, ferns, drifting mist, fireflies.</li>
+          <li>Pugmarks lead down the page. A tiger peeks from the grass, a hornbill crosses, leaves part to reveal your names.</li>
+          <li>The two of you, illustrated from your photos, beside the Ramganga river. The dates are on a wooden trail sign, with an Add to Calendar button.</li>
+          <li>RSVP form on the permit. On send, a rubber stamp thuds down: "Entry confirmed".</li>
+        </ol>
+      </div>
+
+      <div class="block">
+        <h3>Palette: pastel dawn in the sal forest</h3>
+        <div class="swatches">
+          <div class="sw"><i style="background:var(--b-mist)"></i><b>Morning mist</b><span>#EEF3EC</span></div>
+          <div class="sw"><i style="background:var(--b-sage)"></i><b>Sal leaf</b><span>#A9C3A2</span></div>
+          <div class="sw"><i style="background:var(--b-fern)"></i><b>Fern</b><span>#5F8A6A</span></div>
+          <div class="sw"><i style="background:var(--b-peach)"></i><b>Dawn peach</b><span>#F6C9B4</span></div>
+          <div class="sw"><i style="background:var(--b-river)"></i><b>Ramganga</b><span>#B9D7E3</span></div>
+          <div class="sw"><i style="background:var(--b-butter)"></i><b>Firefly</b><span>#F5E3A3</span></div>
+          <div class="sw"><i style="background:var(--b-bark)"></i><b>Bark ink</b><span>#4A3B32</span></div>
+        </div>
+      </div>
+
+      <div class="block">
+        <h3>Type</h3>
+        <div class="typespec" style="color:var(--b-bark);background:#FFFDF7">
+          <span style="font-family:var(--f-b-display);font-size:1.9rem;line-height:1.1">Shreya &amp; Akshay</span>
+          <span style="font-family:var(--f-b-body);font-size:1rem">Soft storybook serif for names, clean sans for the permit and form.</span>
+          <span class="small">Young Serif (display) · Mulish (body and labels)</span>
+        </div>
+      </div>
+
+      <div class="block">
+        <h3>Motion vocabulary</h3>
+        <div class="chips"><span>Tilt-to-parallax forest layers</span><span>Gate swing open</span><span>Mist drift</span><span>Fireflies</span><span>Leaves parting to reveal</span><span>Pugmark trail on scroll</span><span>Rubber-stamp RSVP</span></div>
+      </div>
+      <p class="small">Illustrations needed: the two of you in a soft gouache storybook style, a tiger, a hornbill, and 3–4 forest layers.</p>
+    </div>
+  </section>
+
+  <div class="divider" role="presentation"></div>
+
+  <!-- ================= C ================= -->
+  <section class="block" aria-labelledby="c-title">
+    <span class="eyebrow">Concept C · the hybrid</span>
+    <h2 id="c-title" style="margin:0;font-size:clamp(1.5rem,4vw,2.1rem)">From the classroom to the jungle</h2>
+    <div class="hybrid">
+      <div class="h1"><b>Opens as A</b>The folded chit on notebook paper, the doodle kids.</div>
+      <div class="h2"><b>The turn</b>As you scroll, the doodles walk off the page and the pencil lines fill in with colour. The notebook becomes the painted forest.</div>
+      <div class="h3"><b>Ends as B</b>The two of you in Corbett, dates on the trail sign, RSVP stamped on the permit.</div>
+    </div>
+    <p class="small" style="max-width:62ch">The strongest story, and the most illustration work. To hit a 2–3 day launch, the forest would be a single scene rather than a full parallax walk.</p>
+  </section>
+</div>
+
+<script>
+(() => {
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // A: line boil on the doodle
+  const turb = document.getElementById('turb');
+  if (!reduce && turb) { let s = 1; setInterval(() => turb.setAttribute('seed', (s = s % 4 + 1)), 130); }
+
+  // A: chit unfold
+  const chit = document.getElementById('chit'), hint = document.getElementById('chit-hint');
+  const toggle = (e) => {
+    if (e.target.closest('label')) return;
+    const open = chit.getAttribute('aria-expanded') !== 'true';
+    chit.setAttribute('aria-expanded', String(open));
+    chit.setAttribute('aria-label', open ? 'Note, opened. Tap to fold.' : 'Folded note. Tap to open.');
+    hint.textContent = open ? 'tick yes or no (tap again to fold)' : 'tap the note';
+  };
+  chit.addEventListener('click', toggle);
+  chit.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(e); } });
+  const yes = document.getElementById('a-yes'), no = document.getElementById('a-no');
+  yes.addEventListener('change', () => { if (yes.checked) no.checked = false; });
+  no.addEventListener('change', () => { if (no.checked) yes.checked = false; });
+
+  // A: scratch card
+  const cv = document.getElementById('scratch'), cx = cv.getContext('2d');
+  const paint = () => {
+    cx.globalCompositeOperation = 'source-over';
+    const g = cx.createLinearGradient(0, 0, cv.width, cv.height);
+    g.addColorStop(0, '#CFC6EC'); g.addColorStop(.5, '#E6E0F7'); g.addColorStop(1, '#C3BBE4');
+    cx.fillStyle = g; cx.fillRect(0, 0, cv.width, cv.height);
+    cx.fillStyle = '#2B3A8C'; cx.font = '700 40px Gaegu, cursive'; cx.textAlign = 'center';
+    cx.fillText('scratch here ✎', cv.width / 2, cv.height / 2 + 12);
+  };
+  document.fonts.ready.then(paint); paint();
+  let down = false;
+  const scratch = (e) => {
+    const r = cv.getBoundingClientRect();
+    const x = (e.clientX - r.left) * cv.width / r.width, y = (e.clientY - r.top) * cv.height / r.height;
+    cx.globalCompositeOperation = 'destination-out';
+    cx.beginPath(); cx.arc(x, y, 34, 0, Math.PI * 2); cx.fill();
+  };
+  cv.addEventListener('pointerdown', e => { down = true; cv.setPointerCapture(e.pointerId); scratch(e); });
+  cv.addEventListener('pointermove', e => { if (down) scratch(e); });
+  cv.addEventListener('pointerup', () => { down = false; });
+
+  // B: forest layers
+  const forest = document.getElementById('forest');
+  const NS = 'http://www.w3.org/2000/svg';
+  const layers = [
+    { color: '#C9D9C2', base: 205, n: 9, h: [70, 110], depth: .12 },
+    { color: '#A9C3A2', base: 245, n: 7, h: [100, 150], depth: .28 },
+    { color: '#7FA486', base: 290, n: 6, h: [130, 190], depth: .5 },
+  ];
+  let seed = 7; const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
+  const els = [];
+  layers.forEach(L => {
+    const svg = document.createElementNS(NS, 'svg');
+    svg.setAttribute('viewBox', '0 0 400 340'); svg.setAttribute('preserveAspectRatio', 'xMidYMax slice');
+    svg.setAttribute('class', 'layer'); svg.dataset.depth = L.depth;
+    let d = `M0 340V${L.base}`;
+    for (let x = 0; x <= 400; x += 40) d += ` Q${x + 20} ${L.base - 14 - rnd() * 12} ${x + 40} ${L.base}`;
+    d += ' V340Z';
+    let shapes = `<path d="${d}" fill="${L.color}"/>`;
+    for (let i = 0; i < L.n; i++) {
+      const x = 20 + i * (380 / L.n) + rnd() * 20, h = L.h[0] + rnd() * (L.h[1] - L.h[0]), top = L.base - h, r = 16 + rnd() * 12;
+      shapes += `<rect x="${x - 3}" y="${top + r}" width="6" height="${h}" fill="#4A3B32" opacity=".35"/>`
+        + `<ellipse cx="${x}" cy="${top + r}" rx="${r * 1.1}" ry="${r * 1.35}" fill="${L.color}"/>`
+        + `<ellipse cx="${x - r * .7}" cy="${top + r * 1.8}" rx="${r * .8}" ry="${r}" fill="${L.color}"/>`
+        + `<ellipse cx="${x + r * .7}" cy="${top + r * 1.6}" rx="${r * .8}" ry="${r}" fill="${L.color}"/>`;
+    }
+    if (L.depth === .5) for (let i = 0; i < 14; i++) {
+      const x = rnd() * 400, s = 10 + rnd() * 16;
+      shapes += `<path d="M${x} 340 Q${x - s} ${340 - s * 2} ${x - s * 1.6} ${340 - s * 3.2} M${x} 340 Q${x + s} ${340 - s * 2} ${x + s * 1.5} ${340 - s * 3}" stroke="#5F8A6A" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+    }
+    svg.innerHTML = shapes; forest.insertBefore(svg, forest.querySelector('.forest-title')); els.push(svg);
+  });
+  els.push(forest.querySelector('.sun'));
+  const mist = document.createElement('div');
+  mist.style.cssText = 'position:absolute;left:0;right:0;bottom:60px;height:70px;background:linear-gradient(180deg,transparent,rgba(238,243,236,.85),transparent);z-index:3';
+  forest.insertBefore(mist, forest.querySelector('.forest-title'));
+  if (!reduce) for (let i = 0; i < 16; i++) {
+    const f = document.createElement('span'); f.className = 'fly';
+    f.style.cssText = `left:${rnd() * 95}%;top:${35 + rnd() * 55}%;--dx:${(rnd() - .5) * 60}px;--dy:${(rnd() - .5) * 40}px;animation-delay:${-rnd() * 7}s,${-rnd() * 2.4}s`;
+    forest.appendChild(f);
+  }
+  const move = (nx, ny) => { if (reduce) return; els.forEach(el => { const k = +el.dataset.depth || .08; el.style.transform = `translate(${-nx * k * 60}px, ${-ny * k * 18}px)`; }); };
+  forest.addEventListener('pointermove', e => { const r = forest.getBoundingClientRect(); move((e.clientX - r.left) / r.width - .5, (e.clientY - r.top) / r.height - .5); });
+  forest.addEventListener('pointerleave', () => move(0, 0));
+  window.addEventListener('deviceorientation', e => { if (e.gamma != null) move(Math.max(-1, Math.min(1, e.gamma / 30)) / 2, Math.max(-1, Math.min(1, (e.beta - 40) / 30)) / 2); });
+
+  // B: stamp
+  const permit = document.getElementById('permit'), btn = document.getElementById('stampBtn');
+  btn.addEventListener('click', () => {
+    const on = !permit.classList.contains('stamped');
+    permit.classList.remove('stamped'); void permit.offsetWidth;
+    if (on) permit.classList.add('stamped');
+    btn.textContent = on ? 'Undo stamp' : 'Stamp my RSVP';
+  });
+})();
+</script>

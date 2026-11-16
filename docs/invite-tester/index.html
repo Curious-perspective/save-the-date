@@ -1,0 +1,254 @@
+<title>Invitation Lettering Tester</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Allura&family=Ballet&family=Bodoni+Moda:ital,wght@0,500;1,500&family=Cinzel:wght@500&family=Cinzel+Decorative&family=Corinthia:wght@700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=Cormorant+SC:wght@500&family=Forum&family=Gilda+Display&family=Great+Vibes&family=Imperial+Script&family=Italiana&family=Italianno&family=Luxurious+Script&family=Marcellus&family=Mea+Culpa&family=Monsieur+La+Doulaise&family=Parisienne&family=Petit+Formal+Script&family=Pinyon+Script&family=Playfair+Display:ital,wght@0,500;1,500&family=Rouge+Script&family=Tangerine:wght@700&family=Yeseva+One&display=swap">
+<style>
+  /* layout: the phone screen stays pinned (left on desktop, top on a phone) while the controls scroll beside it */
+  :root { --bg: #F6F0E4; --panel: #FFFAF0; --ink: #3B2E20; --muted: #7A6A58; --line: #D9CBB3; --accent: #6A4318; --on-accent: #FFF8EA;
+    --f-body: "Cormorant Garamond", Georgia, serif; --f-mono: ui-monospace, Menlo, Consolas, monospace; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --bg: #1E1914; --panel: #2A231C; --ink: #F0E6D4; --muted: #B5A690; --line: #4A3F33; --accent: #D9B26A; --on-accent: #1E1914; color-scheme: dark; }
+  }
+  :root[data-theme="dark"] { --bg: #1E1914; --panel: #2A231C; --ink: #F0E6D4; --muted: #B5A690; --line: #4A3F33; --accent: #D9B26A; --on-accent: #1E1914; color-scheme: dark; }
+
+  * { box-sizing: border-box; }
+  body { margin: 0; padding-block: 16px 48px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+    background: var(--bg); color: var(--ink); font: 400 18px/1.45 var(--f-body); }
+  h1 { font-weight: 600; font-size: 26px; line-height: 1.15; margin: 0 0 4px; text-wrap: balance; }
+  .intro { margin: 0 0 12px; color: var(--muted); max-width: 60ch; }
+  .wrap { max-width: 1020px; margin: 0 auto; }
+  .layout { display: flex; flex-direction: column; gap: 12px; }
+  .stage { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); padding: 6px 0; }
+  .controls { min-width: 0; }
+  /* the phone screen: same shape as the capture (390 × 844); type is sized in cqw = % of its width, as on the site */
+  .phone { position: relative; container-type: inline-size; height: min(54vh, 560px); aspect-ratio: 390 / 844; max-width: 100%; margin: 0 auto; overflow: hidden; border-radius: 14px; background: #4F6B42 url(leaves.webp) center / cover; box-shadow: 0 0 0 1.5px var(--line); }
+  @media (min-width: 820px) {
+    .layout { flex-direction: row; align-items: flex-start; gap: 36px; }
+    .stage { flex: 0 0 auto; top: calc(env(safe-area-inset-top, 0px) + 16px); padding: 0; }
+    .phone { height: min(86vh, 780px); }
+    .controls { flex: 1; }
+  }
+  #txt { position: absolute; transform: translate(-50%, -50%); text-align: center; white-space: nowrap; cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none;
+    padding: 0.35em 0.5em; /* room for swashes, so the foil clip does not cut them off */ }
+  #txt.drag { cursor: grabbing; }
+
+  section { margin: 0 0 20px; }
+  h2 { font-size: 15px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin: 0 0 8px; }
+  .chips { display: grid; grid-template-columns: repeat(auto-fill, minmax(132px, 1fr)); gap: 8px; }
+  button, textarea, input[type="text"] { font: inherit; color: var(--ink); background: var(--panel); border: 1.5px solid var(--line); border-radius: 8px; }
+  button { cursor: pointer; min-height: 44px; }
+  button[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
+  button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  .chip { padding: 6px 8px 4px; text-align: center; overflow: hidden; }
+  .chip b { display: block; font-weight: 400; font-size: 28px; line-height: 1.3; white-space: nowrap; }
+  .chip small { display: block; font-size: 13px; color: var(--muted); }
+  .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .row + .row, .chips + .row { margin-top: 8px; }
+  .sw { width: 46px; height: 46px; min-height: 46px; border-radius: 50%; padding: 0; background: var(--sw); }
+  input[type="color"] { width: 46px; height: 46px; padding: 2px; border: 1.5px solid var(--line); border-radius: 8px; background: var(--panel); cursor: pointer; }
+  .pill { padding: 6px 14px; }
+  textarea { width: 100%; padding: 8px 12px; resize: vertical; line-height: 1.3; }
+  input[type="text"] { flex: 1 1 180px; min-width: 0; min-height: 44px; padding: 6px 12px; }
+  label.slider { display: grid; grid-template-columns: 9.5em 1fr; align-items: center; gap: 8px; margin-bottom: 4px; }
+  output { color: var(--muted); font-variant-numeric: tabular-nums; }
+  input[type="range"] { width: 100%; min-width: 0; height: 36px; accent-color: var(--accent); }
+  .hint { font-size: 15px; color: var(--muted); margin: 6px 0 0; }
+  .out { display: flex; flex-wrap: wrap; gap: 8px; align-items: stretch; }
+  #readout { flex: 1 1 240px; min-width: 0; margin: 0; padding: 10px 12px; background: var(--panel); border: 1.5px solid var(--line); border-radius: 8px; font: 14px/1.5 var(--f-mono); white-space: pre-wrap; user-select: all; -webkit-user-select: all; overflow-wrap: anywhere; }
+  .primary { padding: 6px 18px; background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+</style>
+
+<div class="wrap">
+  <h1>Shreya &amp; Akshay · “You are invited” on the leaves</h1>
+  <p class="intro">This is the first screen of the site. Drag the words to move them, then try fonts, colours and effects. When you like it, copy the lines at the bottom and send them to us.</p>
+  <div class="layout">
+    <div class="stage"><div class="phone" id="phone"><div id="txt"></div></div></div>
+    <div class="controls">
+      <section><h2>Words</h2>
+        <textarea id="text" rows="2" aria-label="The words (press Enter for a new line, up to three)"></textarea>
+        <p class="hint">Press Enter to break it into lines (up to three). Each line can have its own font and size.</p>
+        <div class="row" id="targets"></div>
+      </section>
+      <section><h2>Font</h2>
+        <div class="chips" id="fonts"></div>
+        <div class="row"><input type="text" id="gf" placeholder="Any other Google Font, e.g. Bilbo Swash Caps" aria-label="Any other Google Font name"><button class="pill" id="gfAdd" type="button">Add font</button></div>
+        <p class="hint" id="gfMsg">Type the name exactly as it appears on fonts.google.com.</p>
+        <div class="row" id="styles"></div>
+      </section>
+      <section><h2>Size and spacing</h2>
+        <label class="slider"><span>Size <output id="sizeOut"></output></span><input type="range" id="size" min="4" max="32" step="0.5"></label>
+        <label class="slider"><span>Letter spacing <output id="lsOut"></output></span><input type="range" id="ls" min="-5" max="40" step="1"></label>
+        <label class="slider"><span>Line height <output id="lhOut"></output></span><input type="range" id="lh" min="0.6" max="1.8" step="0.05"></label>
+      </section>
+      <section><h2>Position</h2>
+        <label class="slider"><span>Across <output id="xOut"></output></span><input type="range" id="x" min="0" max="100" step="0.5"></label>
+        <label class="slider"><span>Down <output id="yOut"></output></span><input type="range" id="y" min="0" max="100" step="0.5"></label>
+        <label class="slider"><span>Tilt <output id="rotOut"></output></span><input type="range" id="rot" min="-15" max="15" step="0.5"></label>
+      </section>
+      <section><h2>Colour</h2>
+        <div class="row" id="colors"></div>
+        <label class="row"><input type="color" id="picker" aria-label="Any other colour"> Any other colour</label>
+      </section>
+      <section><h2>Effect</h2>
+        <div class="row" id="effects"></div>
+        <label class="slider" style="margin-top:8px"><span>Strength <output id="kOut"></output></span><input type="range" id="k" min="0" max="2" step="0.1"></label>
+        <div class="row" id="blends"></div>
+        <p class="hint" id="fxhint"></p>
+      </section>
+      <section><h2>Your choice</h2>
+        <div class="out"><p id="readout"></p><button id="copy" class="primary" type="button">Copy</button></div>
+        <div class="row"><button class="pill" id="reset" type="button">Back to what the site has now</button></div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<script>
+  // [family, starting size in % of the screen width, weight]
+  var FONTS = [
+    ['Cormorant Garamond', 14, 600], ['Cormorant SC', 11.5, 500], ['Playfair Display', 11.5, 500], ['Bodoni Moda', 11.5, 500], ['Marcellus', 11.5], ['Forum', 12.5],
+    ['Gilda Display', 11.5], ['Italiana', 12.5], ['Yeseva One', 10.5], ['Cinzel', 10, 500], ['Cinzel Decorative', 9],
+    ['Italianno', 19], ['Great Vibes', 15], ['Pinyon Script', 14.5], ['Tangerine', 20, 700], ['Alex Brush', 15], ['Allura', 15.5], ['Parisienne', 13],
+    ['Rouge Script', 17], ['Imperial Script', 17], ['Luxurious Script', 19], ['Petit Formal Script', 10], ['Corinthia', 17, 700],
+    ['Monsieur La Doulaise', 17], ['Mea Culpa', 17], ['Ballet', 11]
+  ];
+  var COLORS = [
+    ['#F8EED8', 'Warm cream'], ['#FFFFFF', 'White'], ['#E9C97A', 'Gold'], ['#A87A2A', 'Antique gold'], ['#F3C9C0', 'Blush'], ['#E8843C', 'Marigold'],
+    ['#3F2610', 'Dark umber'], ['#1F3A22', 'Deep forest'], ['#5A2C40', 'Rose-plum'], ['#5E1A22', 'Deep maroon']
+  ];
+  var EFFECTS = [['foil', 'Gold foil'], ['none', 'None'], ['shadow', 'Soft shadow'], ['darkhalo', 'Dark halo'], ['lighthalo', 'Light glow'], ['emboss', 'Embossed'], ['outline', 'Outline']];
+  var BLENDS = [['normal', 'Paint on top'], ['multiply', 'Multiply'], ['overlay', 'Overlay'], ['soft-light', 'Soft light'], ['screen', 'Screen']];
+  var STYLES = [['italic', 'Italic'], ['upper', 'CAPITALS']];
+  var KEY = 'invite-lettering-tester';
+  // what the site has today
+  var DEF = { text: 'You Are\nInvited', lines: [{ font: 'Great Vibes', size: 22.5 }, { font: 'Great Vibes', size: 22.5 }], target: 'all', color: '#FFFFFF', effect: 'darkhalo', k: 0.92, blend: 'soft-light',
+    ls: 1, lh: 1.1, x: 50, y: 50, rot: 0, italic: false, upper: false, custom: [] };
+  var s = JSON.parse(JSON.stringify(DEF));
+  try { var saved = JSON.parse(localStorage.getItem(KEY)); if (saved && saved.lines && saved.lines.length) for (var key in s) if (saved[key] != null) s[key] = saved[key]; } catch (e) {}
+
+  function $(id) { return document.getElementById(id); }
+  function fontOf(name) { for (var i = 0; i < FONTS.length; i++) if (FONTS[i][0] === name) return FONTS[i]; return [name, 14]; }
+  function words() { return s.text.split('\n').map(function (l) { return l.trim(); }).filter(Boolean).slice(0, 3); }
+  function targets() { return s.target === 'all' ? s.lines : [s.lines[Math.min(+s.target, s.lines.length - 1)]]; }
+  function loadFont(name) {
+    var l = document.createElement('link'); l.rel = 'stylesheet';
+    l.href = 'https://fonts.googleapis.com/css2?family=' + encodeURIComponent(name).replace(/%20/g, '+') + '&display=swap';
+    document.head.appendChild(l); return l;
+  }
+  function pills(id, items, isOn, onTap, make) {
+    var box = $(id); box.textContent = '';
+    items.forEach(function (it) {
+      var b = document.createElement('button'); b.type = 'button'; b.dataset.v = it[0];
+      if (make) make(b, it); else { b.className = 'pill'; b.textContent = it[1]; }
+      b.setAttribute('aria-pressed', isOn(it[0])); b.onclick = function () { onTap(it[0], it); render(); };
+      box.appendChild(b);
+    });
+  }
+  function rgba(r, g, b, a) { return 'rgba(' + r + ',' + g + ',' + b + ',' + Math.max(0, Math.min(1, a)).toFixed(2) + ')'; }
+
+  function paint(el) {
+    var k = s.k, c = 'cqw', st = el.style;
+    st.color = s.color; st.textShadow = st.filter = st.backgroundImage = st.webkitTextStroke = ''; st.webkitBackgroundClip = st.backgroundClip = '';
+    if (s.effect === 'shadow') st.textShadow = '0 ' + 0.5 * k + c + ' ' + 1.2 * k + c + ' ' + rgba(10, 20, 10, 0.65 * k);
+    if (s.effect === 'darkhalo' || s.effect === 'foil') // the site's own halo: a dark edge and a deep-green haze
+      st.filter = 'drop-shadow(0 1px 1px ' + rgba(40, 26, 6, 0.95 * k) + ') drop-shadow(0 0 ' + 1.3 * k + c + ' ' + rgba(18, 28, 16, 0.85 * k) + ') drop-shadow(0 0 ' + 4 * k + c + ' ' + rgba(18, 28, 16, 0.7 * k) + ') drop-shadow(0 0 ' + 7.5 * k + c + ' ' + rgba(18, 28, 16, 0.5 * k) + ')';
+    if (s.effect === 'foil') {
+      st.backgroundImage = 'radial-gradient(120% 60% at 30% 20%, rgba(255,245,210,0.55), transparent 55%), linear-gradient(100deg, #8A6424 0%, #E9C97A 26%, #B98C3E 44%, #F3DC9A 60%, #A87A2E 78%, #E2BE6E 100%)';
+      st.webkitBackgroundClip = st.backgroundClip = 'text'; st.color = 'transparent';
+    }
+    if (s.effect === 'lighthalo') st.textShadow = '0 0 ' + 0.6 * k + c + ' ' + rgba(255, 255, 255, k) + ', 0 0 ' + 1.8 * k + c + ' ' + rgba(255, 250, 235, 0.95 * k) + ', 0 0 ' + 3.6 * k + c + ' ' + rgba(255, 244, 220, 0.8 * k);
+    if (s.effect === 'emboss') st.textShadow = '-0.7px -0.7px 0 ' + rgba(255, 255, 255, 0.85 * k) + ', 0.9px 0.9px 0.6px ' + rgba(20, 30, 14, 0.75 * k) + ', 0 0 ' + 2 * k + c + ' ' + rgba(18, 28, 16, 0.4 * k);
+    if (s.effect === 'outline') { st.webkitTextStroke = 0.35 * k + c + ' ' + rgba(24, 34, 18, 0.9); st.paintOrder = 'stroke fill'; }
+    st.mixBlendMode = s.blend;
+  }
+
+  function render() {
+    var w = words(), txt = $('txt');
+    while (s.lines.length < Math.max(1, w.length)) s.lines.push(JSON.parse(JSON.stringify(s.lines[s.lines.length - 1])));
+    s.lines.length = Math.max(1, w.length);
+    if (s.target !== 'all' && +s.target >= s.lines.length) s.target = 'all';
+    var first = targets()[0];
+
+    txt.textContent = '';
+    w.forEach(function (line, i) {
+      var d = document.createElement('div'), f = fontOf(s.lines[i].font);
+      d.textContent = line; d.style.fontFamily = "'" + f[0] + "', serif"; d.style.fontWeight = f[2] || 400; d.style.fontSize = s.lines[i].size + 'cqw';
+      txt.appendChild(d);
+    });
+    txt.style.left = s.x + '%'; txt.style.top = s.y + '%';
+    txt.style.transform = 'translate(-50%, -50%) rotate(' + s.rot + 'deg)';
+    txt.style.letterSpacing = (s.ls / 100) + 'em'; txt.style.lineHeight = s.lh;
+    txt.style.fontStyle = s.italic ? 'italic' : 'normal'; txt.style.textTransform = s.upper ? 'uppercase' : 'none';
+    paint(txt);
+
+    var tg = [['all', 'All lines']].concat(w.map(function (l, i) { return [String(i), 'Line ' + (i + 1) + ': ' + l]; }));
+    $('targets').hidden = w.length < 2;
+    pills('targets', tg, function (v) { return s.target === v; }, function (v) { s.target = v; });
+    pills('fonts', FONTS.concat(s.custom.map(function (n) { return [n, 14]; })), function (v) { return first.font === v; },
+      function (v, f) { targets().forEach(function (l) { l.font = v; l.size = f[1]; }); },
+      function (b, f) { b.className = 'chip'; b.innerHTML = '<b style="font-family:\'' + f[0] + '\', serif;font-weight:' + (f[2] || 400) + '">Invited</b><small></small>'; b.lastChild.textContent = f[0]; });
+    pills('styles', STYLES, function (v) { return s[v]; }, function (v) { s[v] = !s[v]; });
+    pills('colors', COLORS, function (v) { return s.color === v; }, function (v) { s.color = v; },
+      function (b, c) { b.className = 'sw'; b.style.setProperty('--sw', c[0]); b.title = c[1]; b.setAttribute('aria-label', c[1]); });
+    pills('effects', EFFECTS, function (v) { return s.effect === v; }, function (v) { s.effect = v; });
+    pills('blends', BLENDS, function (v) { return s.blend === v; }, function (v) { s.blend = v; });
+
+    $('picker').value = s.color.toLowerCase();
+    [['size', first.size, '%'], ['ls', s.ls, ''], ['lh', s.lh, ''], ['x', s.x, '%'], ['y', s.y, '%'], ['rot', s.rot, '°'], ['k', s.k, '×']].forEach(function (r) {
+      $(r[0]).value = r[1]; $(r[0] + 'Out').textContent = r[1] + r[2];
+    });
+    $('fxhint').textContent = s.effect === 'foil' ? 'Gold foil uses its own gold, so the colour choice does not apply.'
+      : s.blend !== 'normal' ? 'Blending mixes the letters into the leaves like ink; it can make them hard to read, so check it at arm’s length.' : '';
+
+    $('readout').textContent = w.map(function (l, i) { return 'Line ' + (i + 1) + ' “' + l + '”: ' + s.lines[i].font + ', size ' + s.lines[i].size; }).join('\n')
+      + '\nColour ' + (s.effect === 'foil' ? 'gold foil' : s.color) + ' · effect ' + s.effect + ' ×' + s.k + ' · blend ' + s.blend
+      + '\nSpacing ' + s.ls + ' · line height ' + s.lh + (s.italic ? ' · italic' : '') + (s.upper ? ' · capitals' : '')
+      + '\nPosition ' + s.x + '% across, ' + s.y + '% down' + (s.rot ? ' · tilt ' + s.rot + '°' : '');
+    try { localStorage.setItem(KEY, JSON.stringify(s)); } catch (e) {}
+  }
+
+  $('text').value = s.text;
+  $('text').oninput = function () { s.text = this.value; render(); };
+  $('picker').oninput = function () { s.color = this.value.toUpperCase(); render(); };
+  $('size').oninput = function () { var v = +this.value; targets().forEach(function (l) { l.size = v; }); render(); };
+  ['ls', 'lh', 'x', 'y', 'rot', 'k'].forEach(function (id) { $(id).oninput = function () { s[id] = +this.value; render(); }; });
+  $('reset').onclick = function () { s = JSON.parse(JSON.stringify(DEF)); $('text').value = s.text; render(); };
+
+  // any other Google Font: load it, and only keep it if the browser really got it
+  s.custom.forEach(loadFont);
+  function addFont() {
+    var name = $('gf').value.trim().replace(/\s+/g, ' '), msg = $('gfMsg');
+    if (!name) return;
+    if (fontOf(name).length > 2 || s.custom.indexOf(name) > -1 || FONTS.some(function (f) { return f[0] === name; })) { msg.textContent = name + ' is already in the list.'; return; }
+    msg.textContent = 'Looking for ' + name + '…';
+    var link = loadFont(name);
+    link.onerror = function () { link.remove(); msg.textContent = 'Could not find “' + name + '” on Google Fonts. Check the spelling and capital letters.'; };
+    link.onload = function () {
+      document.fonts.load('40px "' + name + '"').then(function (got) {
+        if (!got.length) return link.onerror();
+        s.custom.push(name); targets().forEach(function (l) { l.font = name; }); $('gf').value = ''; msg.textContent = name + ' added and applied.'; render();
+      }, link.onerror);
+    };
+  }
+  $('gfAdd').onclick = addFont;
+  $('gf').onkeydown = function (e) { if (e.key === 'Enter') addFont(); };
+
+  // drag the words on the screen
+  var txt = $('txt'), grab = null;
+  txt.onpointerdown = function (e) { var r = $('phone').getBoundingClientRect(); grab = { px: e.clientX, py: e.clientY, x: s.x, y: s.y, w: r.width, h: r.height }; txt.setPointerCapture(e.pointerId); txt.classList.add('drag'); };
+  txt.onpointermove = function (e) {
+    if (!grab) return;
+    s.x = Math.round(Math.max(0, Math.min(100, grab.x + (e.clientX - grab.px) / grab.w * 100)) * 2) / 2;
+    s.y = Math.round(Math.max(0, Math.min(100, grab.y + (e.clientY - grab.py) / grab.h * 100)) * 2) / 2;
+    txt.style.left = s.x + '%'; txt.style.top = s.y + '%'; // light update while dragging; full render on release
+  };
+  txt.onpointerup = txt.onpointercancel = function () { grab = null; txt.classList.remove('drag'); render(); };
+
+  $('copy').onclick = function () {
+    var b = this, done = function () { b.textContent = 'Copied'; setTimeout(function () { b.textContent = 'Copy'; }, 1500); };
+    var pick = function () { var r = document.createRange(); r.selectNodeContents($('readout')); var sel = getSelection(); sel.removeAllRanges(); sel.addRange(r); b.textContent = 'Selected: now copy'; };
+    try { navigator.clipboard.writeText($('readout').textContent).then(done, pick); } catch (e) { pick(); }
+  };
+
+  render();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(render);
+</script>

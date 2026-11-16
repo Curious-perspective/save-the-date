@@ -1,0 +1,185 @@
+/* The Road to Corbett — one painted world. Every scene shares the stage, the paper card and the type. */
+.story { position: relative; height: 100svh; overflow: hidden; background: #33463A; }
+.stage { position: absolute; inset: 0; margin-inline: auto; width: min(100%, 62svh); overflow: hidden; background: #A9C4DE; perspective: 1400px; perspective-origin: 50% 100%; container-type: inline-size; }
+@media (min-aspect-ratio: 3/4) { .stage { box-shadow: 0 0 80px rgba(0, 0, 0, 0.35); } }
+.scene { position: absolute; inset: 0; overflow: hidden; }
+.scene img { user-select: none; -webkit-user-drag: none; pointer-events: none; }
+.scene .bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 60%; }
+.perch { position: absolute; width: 1px; height: 1px; pointer-events: none; }
+
+/* ---------- 1 · dawn at the forest gate ---------- */
+.layer { position: absolute; inset: 0; transform-origin: 50% 100%; will-change: transform; }
+.layer img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 100%; display: block; transform-origin: 50% 100%; }
+.L-frame img { object-fit: fill; }
+.L-frame { transform-origin: 50% 58%; }
+.L-forest { transform-origin: 50% 75%; }
+.L-sky img { object-position: 50% 70%; }
+.L-hills img, .L-forest img, .L-grass img { position: relative; }
+.L-hills img { top: -14%; }
+.L-forest img { top: 6%; }
+.L-grass img { top: 12%; }
+
+.hero-title { position: absolute; inset: 0; z-index: 5; pointer-events: none; }
+.hero-k, .hero-names { position: absolute; left: 0; right: 0; text-align: center; margin: 0; }
+.hero-k { top: calc(env(safe-area-inset-top, 0px) + 4.2svh); font: 600 0.72rem/1 var(--f-caps); letter-spacing: 0.42em; text-transform: uppercase; color: #3E4B3A; text-shadow: 0 0 14px rgba(255, 248, 236, 0.9); }
+.hero-names { top: 21svh; display: grid; justify-items: center; font: 500 clamp(3.1rem, 9.5svh, 4.6rem)/0.86 var(--f-serif); letter-spacing: -0.01em; color: #2E3A2C; text-shadow: 0 1px 0 rgba(255, 250, 240, 0.6), 0 0 22px rgba(255, 246, 232, 0.85); }
+.hero-names .amp {
+  font: italic 600 1.05em/0.95 var(--f-serif); margin: -0.06em 0 -0.02em;
+  background: linear-gradient(100deg, var(--gold-1) 0%, var(--gold-2) 45%, var(--gold-3) 60%, var(--gold-1) 100%);
+  background-size: 220% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; text-shadow: none;
+  filter: drop-shadow(0 0 10px rgba(255, 246, 232, 0.9)); animation: foil 5s ease-in-out infinite alternate;
+}
+@keyframes foil { to { background-position: 100% 0; } }
+.hint { position: absolute; z-index: 6; left: 0; right: 0; bottom: calc(env(safe-area-inset-bottom, 0px) + 18px); margin: 0; text-align: center; font: 600 0.62rem/1 var(--f-caps); letter-spacing: 0.4em; text-transform: uppercase; color: #F8EED8; text-shadow: 0 1px 6px rgba(20, 30, 20, 0.6); }
+.hint::after { content: ""; display: block; width: 1px; height: 26px; margin: 10px auto 0; background: currentColor; animation: hint 1.8s ease-in-out infinite; transform-origin: top; }
+@keyframes hint { 0% { transform: scaleY(0); } 50% { transform: scaleY(1); } 100% { transform: scaleY(1); opacity: 0; } }
+
+.fly { position: absolute; width: 4px; height: 4px; border-radius: 50%; background: #FFF3B8; box-shadow: 0 0 8px 3px rgba(255, 232, 140, 0.8); animation: drift 6s ease-in-out infinite alternate, blink 2.6s ease-in-out infinite; pointer-events: none; }
+.fly:nth-child(3n) { animation-duration: 8s, 3.4s; }
+@keyframes drift { 50% { transform: translate(14px, -10px); } 100% { transform: translate(-10px, -22px); } }
+@keyframes blink { 50% { opacity: 0.2; } }
+
+/* ---------- 2 · the journey ---------- */
+.s2 { z-index: 2; }
+.palash { position: absolute; z-index: 3; top: -1%; left: -6%; width: 58%; height: auto; transform-origin: 0 0; filter: drop-shadow(0 6px 6px rgba(40, 40, 30, 0.2)); }
+.deer { position: absolute; z-index: 2; height: auto; filter: drop-shadow(0 6px 6px rgba(40, 40, 30, 0.2)); }
+.deer-stag { right: 4%; bottom: 37%; width: 25%; }
+.deer-doe { right: 27%; bottom: 38%; width: 20%; }
+.jeep { position: absolute; z-index: 4; left: 5%; width: 90%; bottom: 15%; }
+.jeep img { width: 100%; height: auto; display: block; filter: drop-shadow(0 12px 10px rgba(40, 40, 30, 0.3)); animation: bump 0.42s ease-in-out infinite alternate; }
+@keyframes bump { to { transform: translateY(-1.5px) rotate(-0.25deg); } }
+.border { position: absolute; z-index: 5; left: 0; bottom: 0; width: 100%; height: 22%; object-fit: cover; object-position: 50% 0%;
+  /* soften the cropped top edge so it never reads as a line */
+  -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 22%); mask-image: linear-gradient(180deg, transparent 0%, #000 22%); }
+.bf { position: absolute; z-index: 6; height: auto; animation: flutter 0.5s ease-in-out infinite alternate, hover 4s ease-in-out infinite alternate; }
+.bf-1 { left: 10%; bottom: 23%; width: 10%; }
+.bf-2 { right: 12%; bottom: 26%; width: 9%; animation-delay: -0.2s, -1.5s; }
+@keyframes flutter { to { transform: scaleX(0.55); } }
+@keyframes hover { to { translate: 10px -16px; } }
+
+/* ---------- the paper card (every scene) ---------- */
+.card {
+  position: absolute; z-index: 7; left: 7%; right: 7%; padding: 30px 20px 24px; text-align: center; display: grid; gap: 8px; color: #3B342A;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .08 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"), #FBF6EC;
+  border-radius: 4px; box-shadow: 0 1px 0 rgba(255, 255, 255, 0.8) inset, 0 26px 44px -20px rgba(30, 40, 30, 0.6);
+}
+.card::before { content: ""; position: absolute; inset: 8px; border: 1px solid var(--gold-3); border-radius: 2px; pointer-events: none; }
+.card::after { content: ""; position: absolute; inset: 12px; border: 0.5px solid rgba(185, 140, 62, 0.45); border-radius: 1px; pointer-events: none; }
+.card p { margin: 0; position: relative; z-index: 1; }
+.corner { position: absolute; z-index: 2; width: 30%; height: auto; top: -16px; pointer-events: none; filter: drop-shadow(0 4px 4px rgba(40, 40, 30, 0.18)); }
+.corner-l { left: -14px; }
+.corner-r { right: -14px; }
+.caps { margin: 0; font: 600 0.66rem/1.4 var(--f-caps); letter-spacing: 0.3em; text-transform: uppercase; color: var(--sage); }
+.caps-s { font-size: 0.56rem; letter-spacing: 0.24em; color: #8C7F69; }
+/* card type scales with the stage width (cqw) so small phones keep the same composition */
+.card { padding: clamp(22px, 8cqw, 30px) clamp(14px, 5.3cqw, 20px) clamp(16px, 6.4cqw, 24px); gap: clamp(5px, 2.1cqw, 8px); }
+.card-h { margin: 0; font: 500 clamp(1.2rem, 7.4cqw, 1.75rem)/1.12 var(--f-serif); color: var(--ink); text-wrap: balance; position: relative; z-index: 1; }
+.divider { width: 62%; height: auto; justify-self: center; margin: 2px 0; position: relative; z-index: 1; }
+.card-fam { top: 11%; }
+.fam-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; position: relative; z-index: 1; }
+.fam-side { display: grid; gap: 1px; align-content: start; min-width: 0; }
+.fam-who { font: 600 clamp(1.02rem, 5.7cqw, 1.35rem)/1.1 var(--f-serif); }
+.fam-rel { font: italic 500 clamp(0.8rem, 4cqw, 0.95rem) var(--f-serif); color: #5D6A57; }
+.fam-par { font: 500 clamp(0.82rem, 4.25cqw, 1rem)/1.25 var(--f-serif); text-wrap: balance; }
+.caps { font-size: clamp(0.56rem, 2.8cqw, 0.66rem); }
+
+/* ---------- 3 · the venue ---------- */
+.s3 { z-index: 3; }
+.s3 .bg, .s4 .bg { object-position: 50% 55%; }
+.lotus { position: absolute; z-index: 3; left: -3%; bottom: 13%; width: 28%; height: auto; }
+.kingfishers { position: absolute; z-index: 3; left: 3%; bottom: 25%; width: 32%; height: auto; transform-origin: 50% 90%; animation: bob 3.2s ease-in-out infinite; filter: drop-shadow(0 5px 5px rgba(40, 40, 30, 0.22)); }
+@keyframes bob { 50% { transform: rotate(-3deg) translateY(-2px); } }
+.peacock { position: absolute; z-index: 3; right: 1%; bottom: 12%; width: 40%; height: auto; filter: drop-shadow(0 6px 6px rgba(40, 40, 30, 0.22)); }
+.curtain { position: absolute; z-index: 6; left: 0; top: 0; width: 100%; height: 27%; object-fit: cover; object-position: 50% 0%; transform-origin: 50% 0; animation: sway 5s ease-in-out infinite alternate; }
+@keyframes sway { to { transform: rotate(0.6deg); } }
+.border-venue { height: 16%; }
+.card-date { top: 24%; left: 10%; right: 10%; gap: 6px; }
+.card-date-d { font: 500 clamp(1.5rem, 8.7cqw, 2.05rem)/1.05 var(--f-serif); color: var(--ink); text-wrap: balance; }
+.card-date-p { font: italic 500 1.15rem/1.2 var(--f-serif); color: #5D5446; }
+.cal-btns { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 6px 0 4px; position: relative; z-index: 1; }
+.cal-btn { min-height: 44px; display: inline-grid; place-items: center; padding: 0 16px; border-radius: 999px; border: 1px solid var(--gold-3); color: var(--ink); text-decoration: none; font: 600 1rem var(--f-serif); background: #FFFDF8; }
+.cal-btn:focus-visible { outline: 2px solid var(--gold-1); outline-offset: 3px; }
+
+/* ---------- 4 · dusk in the garden ---------- */
+.s4 { z-index: 4; }
+.dusk { position: absolute; inset: 0; z-index: 2; pointer-events: none; mix-blend-mode: multiply;
+  background: linear-gradient(180deg, rgba(126, 104, 170, 0.7) 0%, rgba(214, 140, 150, 0.45) 30%, rgba(236, 160, 120, 0.3) 48%, rgba(96, 82, 120, 0.42) 75%, rgba(64, 58, 88, 0.55) 100%); }
+.s4 .curtain, .s4 .border, .s4 .kingfishers, .s4 .peacock, .s4 .lotus { filter: brightness(0.82) saturate(0.95) drop-shadow(0 5px 5px rgba(20, 20, 30, 0.25)); }
+.diya { position: absolute; z-index: 4; width: 7px; height: 7px; border-radius: 50%; background: #FFE6A8; box-shadow: 0 0 10px 4px rgba(255, 196, 96, 0.85), 0 0 26px 10px rgba(255, 170, 80, 0.35); animation: flicker 1.8s ease-in-out infinite alternate; }
+.diya:nth-child(2n) { animation-duration: 2.4s; }
+@keyframes flicker { to { box-shadow: 0 0 8px 3px rgba(255, 196, 96, 0.7), 0 0 20px 8px rgba(255, 170, 80, 0.28); } }
+.s4 .fly { z-index: 4; }
+.parakeets { position: absolute; z-index: 5; top: 30%; right: 0; width: 38%; height: auto; }
+.card-rsvp { top: 8%; left: 6%; right: 6%; padding: 28px 18px 18px; gap: 10px; pointer-events: none; }
+.story.rsvp-live .card-rsvp { pointer-events: auto; }
+.mono { position: absolute; z-index: 7; left: 0; right: 0; bottom: 17.5%; margin: 0; text-align: center; font: 500 1.4rem var(--f-serif); color: #F6EADA; text-shadow: 0 1px 8px rgba(30, 20, 40, 0.6); }
+.mono em { color: var(--gold-2); }
+.mono span { font: 600 0.55rem var(--f-caps); letter-spacing: 0.26em; vertical-align: middle; opacity: 0.85; }
+
+/* RSVP form on the card */
+.rsvp-form, .rsvp-done { position: relative; z-index: 1; display: grid; gap: 10px; text-align: left; }
+.rsvp-form .caps, .rsvp-form .card-h { text-align: center; }
+.rsvp-form .card-h { font-size: clamp(1.35rem, 7.9cqw, 1.85rem); margin-bottom: 2px; }
+.fld { display: grid; gap: 4px; margin: 0; padding: 0; border: 0; min-width: 0; }
+.fld > span, .fld legend { font: 600 1rem var(--f-serif); color: #3B342A; padding: 0; }
+.fld legend { margin-bottom: 4px; }
+.fld i { font-weight: 500; color: #8C7F69; }
+.fld input:not([type="radio"]) { font: 500 16px/1.2 var(--f-serif); color: var(--ink); width: 100%; padding: 11px 12px; border: 1px solid #CDBF9F; border-radius: 10px; background: #FFFDF8; outline: none; }
+.fld input:focus { border-color: var(--gold-3); box-shadow: 0 0 0 3px rgba(185, 140, 62, 0.22); }
+.fld-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.seg { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.seg label { position: relative; display: grid; place-items: center; text-align: center; min-height: 48px; padding: 6px; border: 1px solid #CDBF9F; border-radius: 10px; background: #FFFDF8; font: 600 1.02rem/1.15 var(--f-serif); cursor: pointer; transition: background 0.2s, color 0.2s, border-color 0.2s; }
+.seg label.on { background: #3E5443; border-color: #3E5443; color: #F6EFE3; }
+.seg input { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; }
+.seg label:focus-within { outline: 2px solid var(--gold-1); outline-offset: 2px; }
+.stepper { display: flex; align-items: center; gap: 14px; }
+.stepper button { width: 44px; height: 44px; border-radius: 12px; border: 1px solid #CDBF9F; background: #FFFDF8; font: 500 1.4rem var(--f-serif); color: var(--ink); cursor: pointer; }
+.stepper button:disabled { opacity: 0.35; cursor: default; }
+.stepper output { min-width: 2ch; text-align: center; font: 600 1.6rem var(--f-serif); font-variant-numeric: tabular-nums; }
+.rsvp-err { margin: 0; min-height: 1.2em; font: italic 500 0.98rem var(--f-serif); color: #9A3B2E; text-align: center; }
+.send { height: 50px; border: 0; border-radius: 999px; cursor: pointer; background: #3E5443; color: #F6EFE3; font: 600 0.8rem var(--f-caps); letter-spacing: 0.26em; text-transform: uppercase; box-shadow: inset 0 0 0 1px rgba(233, 201, 122, 0.65), 0 10px 20px -12px rgba(30, 40, 30, 0.7); }
+.send:disabled { opacity: 0.6; cursor: progress; }
+.send:focus-visible, .stepper button:focus-visible, .link:focus-visible { outline: 2px solid var(--gold-1); outline-offset: 3px; }
+.rsvp-done { text-align: center; padding: 14px 0 6px; gap: 12px; }
+.rsvp-done p { margin: 0; }
+.rsvp-done-t { font: 500 1.7rem/1.2 var(--f-serif); color: var(--ink); text-wrap: balance; }
+.rsvp-done-s { font: italic 500 1.08rem var(--f-serif); color: #5D5446; }
+.link { justify-self: center; background: none; border: 0; padding: 8px; font: italic 500 1rem var(--f-serif); color: #6B5B44; text-decoration: underline; cursor: pointer; }
+.petal { position: absolute; z-index: 30; left: 0; top: 0; width: 26px; height: auto; pointer-events: none; }
+
+/* ---------- the hornbill guide ---------- */
+.guide { position: absolute; z-index: 20; left: 0; top: 0; width: 24%; aspect-ratio: 640 / 427; pointer-events: none; transform-origin: 50% 85%; will-change: transform; }
+.guide img { position: absolute; display: block; filter: drop-shadow(0 6px 6px rgba(40, 50, 40, 0.25)); }
+.fly-pose { position: absolute; inset: 0; transition: opacity 0.18s; }
+.fly-pose img { inset: 0; width: 100%; height: 100%; }
+.fly-pose .wb { transform-origin: 46.9% 43.9%; }
+.fly-pose .wf { transform-origin: 50.8% 50.8%; }
+.guide.flying .wb { animation: flapB 0.3s ease-in-out infinite alternate; }
+.guide.flying .wf { animation: flapF 0.3s ease-in-out infinite alternate; }
+@keyframes flapB { from { transform: rotate(12deg); } to { transform: rotate(-24deg) scaleY(0.72); } }
+@keyframes flapF { from { transform: rotate(-14deg) scaleY(0.8); } to { transform: rotate(22deg) scaleY(0.68); } }
+/* the perched sticker faces left in the art; mirror it so both poses face right and one flip turns the bird */
+.perch-pose { left: 22%; bottom: 12%; width: 56%; height: auto; transform: scaleX(-1); opacity: 0; transition: opacity 0.18s; }
+.guide:not(.flying) .fly-pose { opacity: 0; }
+.guide:not(.flying) .perch-pose { opacity: 1; }
+
+/* loader while the first scene's art decodes */
+.loader { position: absolute; inset: 0; z-index: 40; display: grid; place-items: center; background: var(--ivory); }
+.loader span { font: 500 2.4rem var(--f-serif); color: var(--ink); letter-spacing: 0.06em; animation: breathe 1.6s ease-in-out infinite; }
+.loader em { font-style: italic; color: var(--gold-3); }
+@keyframes breathe { 50% { opacity: 0.45; } }
+
+/* floating RSVP button */
+.rsvp-fab { position: fixed; z-index: 50; right: calc(16px + env(safe-area-inset-right, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); padding: 12px 18px; border-radius: 999px; text-decoration: none; font: 600 0.72rem var(--f-caps); letter-spacing: 0.28em; color: #F3E3BC; background: rgba(30, 40, 32, 0.78); border: 1px solid rgba(233, 201, 122, 0.6); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); transition: opacity 0.3s, transform 0.3s; }
+.rsvp-fab.is-hidden { opacity: 0; transform: translateY(12px); pointer-events: none; }
+.rsvp-fab:focus-visible { outline: 2px solid var(--gold-2); outline-offset: 3px; }
+
+/* ---------- reduced motion: the same four scenes, stacked and still ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .story { height: auto; overflow: visible; }
+  .stage { position: relative; height: auto; overflow: visible; }
+  .scene { position: relative; height: 100svh; }
+  .guide, .hint, .bf, .parakeets { display: none; }
+  .card-rsvp { pointer-events: auto; }
+  .fly, .hero-names .amp, .loader span, .kingfishers, .curtain, .jeep img, .diya { animation: none; }
+}
