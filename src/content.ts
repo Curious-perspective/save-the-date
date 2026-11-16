@@ -16,6 +16,10 @@ export const content = {
   ],
 
   formal: 'Formal invitation to follow', // shown with the RSVP at dusk
+  // the closing card, after a response has been sent
+  sentYes: 'We can\'t wait to celebrate with you.',
+  sentNo: 'We are sad to hear that.',
+  sentNoNote: 'You will be missed.',
   rsvpBy: '24 November 2026',
   maxGuests: 10, // later: per-family cap from personalised links (?g=)
 

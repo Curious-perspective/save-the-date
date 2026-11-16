@@ -329,7 +329,7 @@ function Calm() {
       </div>
       <div className={`stage b-${ROCK ? 'paper' : BOARD}`}>
         {sky}
-        {resort(true, <div className="board plank plank-board" id="rsvp"><RsvpBoard onAccepted={() => {}} /></div>)}
+        {resort(true, <div className="board plank plank-board" id="rsvp"><RsvpBoard onSent={() => {}} /></div>)}
         {bird(84, 'calc(8% + 10.5cqw)', true)}
       </div>
     </section>
@@ -667,7 +667,29 @@ function Animated() {
         Object.assign(window, { v2tl: tlNow, v2go: (t: number) => { t = toS(t); /* v2go takes TIMELINE time, as before */ free = true; st.scroll(st.start + (t / US) * (st.end - st.start)); ScrollTrigger.update(); drive(true); free = false; gates(t); return tlNow.time() }, v2gates: () => [lo, hi] })
       }
 
+      // THE ENDING (the couple, 17 Nov night) · once a response is sent the hornbill leaves the board: after a "yes" it
+      // flies down and sits on the jeep's bonnet again; after a "no" it flies away, out of the picture (the one time it
+      // may leave the screen). "Send another response" (null) brings it back to the board. Scrolling back hands it
+      // to the story again.
+      let ending: gsap.core.Timeline | null = null
+      const onRsvp = (e: Event) => {
+        const a = (e as CustomEvent<'yes' | 'no' | null>).detail, st = stage.current
+        if (!st || ROCK) return
+        const s = st.getBoundingClientRect(), j = st.querySelector('.jeep2')!.getBoundingClientRect(), from = { x: bird.x, y: bird.y }
+        const bonnet = { x: ((j.left - s.left + 0.86 * j.width) / s.width) * 100, y: ((j.top - s.top + 0.37 * j.height) / s.height) * 100 + 8 * (s.width / s.height) }
+        const path = a === 'yes' ? [from, { x: 34, y: from.y + 10 }, { x: 62, y: bonnet.y - 22 }, { x: bonnet.x + 4, y: bonnet.y - 10 }, bonnet]
+          : a === 'no' ? [from, { x: 38, y: from.y + 5 }, { x: 78, y: from.y - 2 }, { x: 135, y: from.y - 10 }]
+          : [from, { x: 50, y: P.board.y + 14 }, P.board]
+        ending?.kill()
+        ending = gsap.timeline({ onUpdate: render })
+          .set(bird, { perched: 0 })
+          .to(bird, { motionPath: { path, curviness: 1.25 }, duration: a === 'yes' ? 2.4 : 2, ease: 'sine.inOut' })
+          .set(bird, { perched: a === 'no' ? 0 : 1 })
+      }
+      addEventListener('v2rsvp', onRsvp)
+
       return () => {
+        removeEventListener('v2rsvp', onRsvp); ending?.kill()
         alive = false; gsap.ticker.remove(chase); clearTimeout(timer); clearTimeout(roT); ro.disconnect(); clearInterval(watch); clearInterval(dbgTimer); dbg?.remove(); removeEventListener('wheel', onWheel); removeEventListener('keydown', open)
         ScrollTrigger.removeEventListener('refreshInit', place); ScrollTrigger.removeEventListener('refreshInit', before); ScrollTrigger.removeEventListener('refresh', after)
         removeEventListener('scroll', onScroll); removeEventListener('touchstart', down); removeEventListener('touchend', up); removeEventListener('touchcancel', up); removeEventListener('v2free', setFree); rootEl.removeEventListener('focusout', leftField)
@@ -733,7 +755,7 @@ function Animated() {
                   </div>
                 </details>
               </div>
-              <div className="board plank plank-board" id="rsvp"><RsvpBoard onAccepted={shower} /></div>
+              <div className="board plank plank-board" id="rsvp"><RsvpBoard onSent={(a) => { if (a === 'yes') shower(); dispatchEvent(new CustomEvent('v2rsvp', { detail: a })) }} /></div>
             </div>
           </div>
           <div className="tint" aria-hidden="true" />

@@ -7,7 +7,8 @@ type Sent = { name: string; attending: 'yes' | 'no' }
 const readSent = (): Sent | null => { try { return JSON.parse(localStorage.getItem(SENT_KEY) || 'null') } catch { return null } }
 
 // The RSVP on the wooden board: one question at a time so it stays small. Step 1 attend? · 2 name (+ guests) · 3 contact + send.
-export default function RsvpBoard({ onAccepted }: { onAccepted: () => void }) {
+// onSent: 'yes' / 'no' when a response has gone through, null when the guest starts over (the story moves the hornbill)
+export default function RsvpBoard({ onSent }: { onSent: (a: 'yes' | 'no' | null) => void }) {
   const [sent, setSent] = useState<Sent | null>(readSent)
   const [step, setStep] = useState(1)
   const [attending, setAttending] = useState<'yes' | 'no' | ''>('')
@@ -25,24 +26,28 @@ export default function RsvpBoard({ onAccepted }: { onAccepted: () => void }) {
     e.preventDefault()
     if (phone && !/^\+?[\d\s-]{7,16}$/.test(phone)) return setError('That phone number doesn\'t look right. You can leave it empty.')
     if (email && !/^\S+@\S+\.\S+$/.test(email)) return setError('That email doesn\'t look right. You can leave it empty.')
-    if (!import.meta.env.VITE_RSVP_URL) return setError('RSVPs aren\'t connected yet. Please try again a little later.')
+    // ponytail: `?demo=1` shows the ending without sending anything (for the couple to review before the sheet is connected); remove at launch
+    const demo = new URLSearchParams(location.search).has('demo')
+    if (!demo && !import.meta.env.VITE_RSVP_URL) return setError('RSVPs aren\'t connected yet. Please try again a little later.')
     setError(''); setSending(true)
     try {
-      const res = await sendRsvp({ name: name.trim(), phone, email, attending: attending as 'yes' | 'no', guests: attending === 'yes' ? guests : 0 })
-      if (!res.ok) throw new Error(res.error)
+      if (!demo) {
+        const res = await sendRsvp({ name: name.trim(), phone, email, attending: attending as 'yes' | 'no', guests: attending === 'yes' ? guests : 0 })
+        if (!res.ok) throw new Error(res.error)
+      }
       const done = { name: name.trim(), attending: attending as 'yes' | 'no' }
-      try { localStorage.setItem(SENT_KEY, JSON.stringify(done)) } catch { /* private mode */ }
+      if (!demo) try { localStorage.setItem(SENT_KEY, JSON.stringify(done)) } catch { /* private mode */ }
       setSent(done)
-      if (attending === 'yes') onAccepted()
+      onSent(done.attending)
     } catch { setError('We couldn\'t send that. Please check your connection and try again.') } finally { setSending(false) }
   }
 
   if (sent) return (
     <div className="board-in" role="status">
       <p className="board-k">Thank you, {sent.name.split(' ')[0]}</p>
-      <p className="board-q">{sent.attending === 'yes' ? 'We can\'t wait to celebrate with you.' : 'You\'ll be missed. Thank you for letting us know.'}</p>
-      <p className="board-note">{content.formal}</p>
-      <button type="button" className="board-link" onClick={() => { setSent(null); setStep(1); try { localStorage.removeItem(SENT_KEY) } catch { /* ignore */ } }}>Send another response</button>
+      <p className="board-q">{sent.attending === 'yes' ? content.sentYes : content.sentNo}</p>
+      <p className="board-note">{sent.attending === 'yes' ? content.formal : content.sentNoNote}</p>
+      <button type="button" className="board-link" onClick={() => { onSent(null); setSent(null); setStep(1); try { localStorage.removeItem(SENT_KEY) } catch { /* ignore */ } }}>Send another response</button>
     </div>
   )
 
