@@ -53,6 +53,7 @@ const BEATS = BEATS_T.filter((b) => IDLE_W === IDLE_LEN || b <= IDLE_AT || b >= 
 const BOARD = (/[?&]b=(wood|paper|rock)\b/.exec(location.search)?.[1] ?? 'paper') as 'wood' | 'paper' | 'rock'
 const ROCK = BOARD === 'rock'
 const DIR = ROCK ? 1 : -1 // the carrier leaves upwards (hung) or downwards (a rock sinking)
+const SWAP = 9.9 // the date board has lifted out of the frame (F2 - 0.6 .. F2 - 0.15); the RSVP board comes down from F2 - 0.05
 const F1 = 7.0, F2 = 10.0 // when the sign turns over (F1 happens off screen, between the two places: it comes back down as the date)
 
 // Hornbill perches, in % of the stage (x of width, y of height). Branches are laid out from the same numbers.
@@ -62,6 +63,7 @@ const P = {
   forest: { x: 68.3, y: 46.5 },
   palash: { x: 71.7, y: 12.7 },
   board: { x: 84, y: 22.5 },
+  jeep: { x: 70, y: 70 }, // on the windscreen frame of the jeep at rest in the road scene (worked out in perches())
 }
 const AIR3 = [{ x: 78, y: 9.7 }] // the hop from the palash to the board
 // Feet on the wood. All in stage widths (k = W/H in %): the bird is 30% wide and render() anchors it by its tail tip,
@@ -74,6 +76,13 @@ const perches = (W: number, H: number, crop = 0) => {
   P.palash.y = c + 4 * g + (0.108 + tail) * k    // .palash top 4%, feet on top of the upper flower cluster
   P.board.y = c + 8 * g + (0.234 + tail) * k     // .sign-turn top 8% + the board's 26% margin = the board's top edge
   AIR3[0].y = P.palash.y - 3
+  // the jeep at rest on the road (v2.css `.art > img.jeep`: 70.16% of the painting wide, left 14.92%, bottom 13.5%;
+  // the painting is as tall as the stage or as wide, bottom-anchored and centred). Feet on top of the windscreen frame: 61%
+  // along the jeep, 11% down from its top (the art faces right on screen). Not the bonnet: the painted deer stands
+  // right behind it there, and its antlers looked like the bird's.
+  { const aw = Math.max(W, H * 0.5625), ah = aw * 1536 / 864, jw = 0.7016 * aw, jh = jw * 606 / 1128
+    const jx = (W - aw) / 2 + 0.1492 * aw, jtop = H - 0.135 * ah - jh
+    P.jeep.x = ((jx + 0.61 * jw) / W) * 100; P.jeep.y = ((jtop + 0.11 * jh) / H) * 100 + tail * k }
   // PAPER has no branch: the hornbill sits on the card's own top edge, by its right-hand flowers
   if (BOARD === 'paper') { P.palash.x = 82; P.palash.y = P.board.y; P.board.x = 89; AIR3[0].x = 86; AIR3[0].y = P.board.y - 4 }
   if (ROCK) {
@@ -380,9 +389,12 @@ function Animated() {
           gsap.set(board, { y: 0.8 * H * (1 - inn(F2)), autoAlpha: t >= F2 + 0.25 ? 1 : 0 })
           return
         }
-        gsap.set(famFace, { rotationX: -90 * out(F1), autoAlpha: t < F1 + 0.25 ? 1 : 0 })
-        gsap.set(dateFace, { rotationX: t < F2 ? 90 * (1 - inn(F1)) : -90 * out(F2), autoAlpha: t >= F1 + 0.25 && t < F2 + 0.25 ? 1 : 0 })
-        gsap.set(board, { rotationX: 90 * (1 - inn(F2)), autoAlpha: t >= F2 + 0.25 ? 1 : 0 })
+        // the boards never turn over (the couple, 17 Nov: "banners need to come from the top, not flip between two
+        // banners"): each one is swapped while the sign is up out of the frame (F1 between the two places; SWAP while
+        // the date board has lifted away), and comes down from the top as its own board
+        gsap.set(famFace, { rotationX: 0, autoAlpha: t < F1 + 0.25 ? 1 : 0 })
+        gsap.set(dateFace, { rotationX: 0, autoAlpha: t >= F1 + 0.25 && t < SWAP ? 1 : 0 })
+        gsap.set(board, { rotationX: 0, autoAlpha: t >= SWAP ? 1 : 0 })
       }
       gsap.set(flip, { rotationY: 180 })
 
@@ -451,20 +463,29 @@ function Animated() {
         // (not with rocks: the tall stone stands at the bottom, so the villa is left where it is, above the stone)
         .to('.resort', { y: () => (ROCK ? 0 : RESORT_END) * sh(), duration: 0.7, ease: 'sine.inOut' }, F2 - 0.35)
         .set({}, {}, U)
+      if (!ROCK) tl
+        .to('.palash-grp', { y: () => -1.2 * sh(), duration: 0.45, ease: 'power2.in' }, F2 - 0.6)
+        .fromTo('.palash-grp', { y: () => -1.2 * sh() }, { y: 0, duration: 0.55, ease: 'power2.out', immediateRender: false }, F2 - 0.05)
 
       // hornbill: seated on the forest branch from the first frame (behind the leaves). As the forest sinks it flies on
       // ahead, out past the right edge; it comes back in with the palash branch and lands on it as the sign settles.
       fly([P.forest, { x: 80, y: 38 }, { x: 98, y: 27 }, { x: 120, y: 20 }], 2.15, 0.8)
-      fly([{ x: 120, y: 14 }, { x: 98, y: 7 }, { x: 82, y: 6 }, P.palash], ROCK ? 4.95 : 3.65, 0.5)
-      // as the sign lifts and the riverside sinks it flies on ahead again, and returns with the sign at the resort
-      fly([P.palash, { x: 92, y: 9 }, { x: 122, y: 12 }], 6.3, 0.45)
-      fly([{ x: 122, y: 14 }, { x: 98, y: 7 }, { x: 82, y: 6 }, P.palash], 7.75, 0.5)
-      // at dusk it fetches the scroll and brings it to the sign, which then turns over into the RSVP board (F2)
-      // (with rocks it waits for the tall stone to rise, and lands on it as it arrives)
-      const FB = ROCK ? F2 + 0.05 : F2 - 0.55
-      tl.set(bird, { scroll: 1 }, FB)
-      fly([P.palash, ...AIR3, P.board], FB, 0.55)
-      tl.set(bird, { scroll: 0 }, FB + 0.55)
+      if (ROCK) {
+        fly([{ x: 120, y: 14 }, { x: 98, y: 7 }, { x: 82, y: 6 }, P.palash], 4.95, 0.5)
+        fly([P.palash, { x: 92, y: 9 }, { x: 122, y: 12 }], 6.3, 0.45)
+        fly([{ x: 122, y: 14 }, { x: 98, y: 7 }, { x: 82, y: 6 }, P.palash], 7.75, 0.5)
+        fly([P.palash, ...AIR3, P.board], F2 + 0.05, 0.55) // lands on the tall stone as it arrives
+      } else {
+        // (the couple, 17 Nov) it comes in under the board and SITS ON THE JEEP as the jeep stops at the centre…
+        fly([{ x: 122, y: 46 }, { x: 106, y: 50 }, { x: 94, y: 54 }, P.jeep], 3.6, 0.5)
+        // …takes off as the jeep drives away and flies on ahead of it
+        fly([P.jeep, { x: 96, y: 52 }, { x: 124, y: 42 }], 4.3, 0.4)
+        // at the resort it comes back and SITS ON THE BOARD as the date board comes down…
+        fly([{ x: 122, y: 14 }, { x: 98, y: 7 }, { x: 88, y: 6 }, P.palash], 7.75, 0.5)
+        // …lifts off when that board goes up, and lands on the RSVP board as it comes down. It carries nothing.
+        fly([P.palash, { x: 100, y: 12 }, { x: 124, y: 14 }], F2 - 0.65, 0.4)
+        fly([{ x: 124, y: 14 }, { x: 100, y: 7 }, { x: 94, y: 6 }, P.board], F2, 0.5)
+      }
 
       // three curtains, one after another, each parting to the LEFT and RIGHT: we push through the near one, then the
       // mid one, then the far one, and the forest is there. EVERY composed plant moves on its own (the couple's call:
