@@ -248,10 +248,15 @@ html:has(.v2), html:has(.v2) body { background: #33463A; }
 .b-paper :is(.board-btn, .board-link, .board-step button, .cal summary, .cal-opts a):focus-visible, .b-rock :is(.board-btn, .board-link, .board-step button, .cal summary, .cal-opts a):focus-visible,
 .b-paper .board-fld input:focus, .b-rock .board-fld input:focus { outline: 2px solid #3B2414; outline-offset: 2px; }
 
-/* PAPER · a fine ivory invitation card: warm white, a hairline gold rule set in from the edge, a soft paper shadow,
-   hung from the same palash branch on two fine gold cords. Kept narrower than the wooden sign so more painting shows. */
-.b-paper .plank { border: 0; border-image: none; border-radius: 3px; padding: 22px 18px 18px; background: #FBF6EC linear-gradient(180deg, rgba(255, 255, 255, 0.5), rgba(233, 222, 198, 0.35)); outline: 1px solid #B8923E; outline-offset: -8px; filter: drop-shadow(0 8px 10px rgba(40, 28, 12, 0.3)); }
-.b-paper .plank::before { left: 0; right: 0; bottom: 100%; aspect-ratio: 299 / 70; background: linear-gradient(#B8923E, #9A7830) 20% 0 / 1.5px 100% no-repeat, linear-gradient(#B8923E, #9A7830) 80% 0 / 1.5px 100% no-repeat; }
+/* PAPER · the pastel board (the couple, 17 Nov: "remove the branch and the strings; use the older one with flowers on
+   the top edge and a small border"): a warm ivory card with a thin gold rule set in from the edge and the older
+   card's rose-and-jasmine sprays on its two top corners. No branch, no cords: the card simply comes down into place.
+   Kept narrower than the wooden sign so more painting shows. */
+.b-paper .palash { display: none; }
+.b-paper .plank { border: 0; border-image: none; border-radius: 3px; padding: 26px 18px 18px; background: #FBF6EC linear-gradient(180deg, rgba(255, 255, 255, 0.5), rgba(233, 222, 198, 0.35)); outline: 1px solid #B8923E; outline-offset: -8px; filter: drop-shadow(0 8px 10px rgba(40, 28, 12, 0.3)); }
+.b-paper .plank::before, .b-paper .plank::after { content: ""; position: absolute; top: -7.5cqw; bottom: auto; width: 27cqw; aspect-ratio: 390 / 370; background: url("/story/flowers/corner-tl.webp") center / contain no-repeat; pointer-events: none; }
+.b-paper .plank::before { left: -6.5cqw; right: auto; }
+.b-paper .plank::after { right: -6.5cqw; background-image: url("/story/flowers/corner-tr.webp"); }
 /* above the dusk and golden-hour overlays (z 8): under them the ivory card and its white fields turned mauve */
 .b-paper .palash-grp { z-index: 9; }
 .b-paper .plank-fam { left: 9%; right: 9%; }

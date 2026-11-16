@@ -58,6 +58,8 @@ const perches = (W: number, H: number, crop = 0) => {
   P.palash.y = c + 4 * g + (0.108 + tail) * k    // .palash top 4%, feet on top of the upper flower cluster
   P.board.y = c + 8 * g + (0.234 + tail) * k     // .sign-turn top 8% + the board's 26% margin = the board's top edge
   AIR3[0].y = P.palash.y - 3
+  // PAPER has no branch: the hornbill sits on the card's own top edge, by its right-hand flowers
+  if (BOARD === 'paper') { P.palash.x = 82; P.palash.y = P.board.y; P.board.x = 89; AIR3[0].x = 86; AIR3[0].y = P.board.y - 4 }
   if (ROCK) {
     // feet on the stone: the rocks stand on the bottom edge (.b-rock in v2.css: wide 110cqw, its foot 1% above the
     // bottom; tall 86cqw, 4% below), so their tops are 99 - 0.51k and 104 - 1.218k. On the wide rock the bird sits on
@@ -406,7 +408,7 @@ function Animated() {
         .fromTo('.jeep', { left: '-72%' }, { left: '14.92%', duration: 1.1, ease: 'power2.out' }, 2.95)
         .fromTo('.jeep', { left: '14.92%' }, { left: '104%', duration: 0.6, ease: 'power2.in', immediateRender: false }, 4.3)
         // …and only once it has gone does the palash branch lower the wooden sign with the two families
-        .fromTo('.palash-grp', { y: () => DIR * 1.2 * sh() }, { y: 0, duration: 0.55, ease: 'power2.out' }, 4.9)
+        .fromTo('.palash-grp', { y: () => DIR * 1.2 * sh() }, { y: 0, duration: 0.55, ease: 'power2.out' }, ROCK ? 4.9 : 3.6)
         // ROAD → RESORT · the families have been read (0.9): the sign lifts away and we go on. The riverside sinks out
         // of frame, whole, as the forest did; the resort was standing behind it all along (kept RESORT_LOW lower so its
         // tall mango trees stayed hidden behind the riverside's own trees) and rises into place under the same sky.
@@ -434,7 +436,7 @@ function Animated() {
       // hornbill: seated on the forest branch from the first frame (behind the leaves). As the forest sinks it flies on
       // ahead, out past the right edge; it comes back in with the palash branch and lands on it as the sign settles.
       fly([P.forest, { x: 80, y: 38 }, { x: 98, y: 27 }, { x: 120, y: 20 }], 2.15, 0.8)
-      fly([{ x: 120, y: 14 }, { x: 98, y: 7 }, { x: 82, y: 6 }, P.palash], 4.95, 0.5)
+      fly([{ x: 120, y: 14 }, { x: 98, y: 7 }, { x: 82, y: 6 }, P.palash], ROCK ? 4.95 : 3.65, 0.5)
       // as the sign lifts and the riverside sinks it flies on ahead again, and returns with the sign at the resort
       fly([P.palash, { x: 92, y: 9 }, { x: 122, y: 12 }], 6.3, 0.45)
       fly([{ x: 122, y: 14 }, { x: 98, y: 7 }, { x: 82, y: 6 }, P.palash], 7.75, 0.5)
