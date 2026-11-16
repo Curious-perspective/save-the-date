@@ -273,7 +273,7 @@ function Calm() {
         <div className="art">
           <img src="/v2/resort/scene.webp" alt="" />
           {dusk && RWINDOWS.map(([x, y, w, h], i) => <i key={i} className="rwin" style={{ left: `${x}%`, top: `${y}%`, width: `${w}%`, height: `${h}%` }} />)}
-          {dusk && RLAMPS.map(([x, y], i) => <i key={i} className="glow rlamp" style={{ left: `${x}%`, top: `${y}%` }} />)}
+          {dusk && RLAMPS.map(([x, y], i) => <i key={i} className="fly rlamp" style={{ left: `${x}%`, top: `${y}%` }} />)}
           <img className="jeep2" src="/story/jeep.webp" alt="Shreya and Akshay's jeep, parked at the gate" />
         </div>
       </div>
@@ -346,7 +346,7 @@ function Animated() {
     const mm = gsap.matchMedia()
     mm.add('all', () => {
       // start from clean inline styles (React StrictMode mounts twice in dev and can leave stale transforms behind)
-      gsap.set('.sA, .sB, .names, .cloud-a, .cloud-b, .palash-grp, .jp, .jbed, .jfly, .std, .guide, .fam-face, .date-face, .board, .tint, .dusk, .glow, .rwin, .L-sky, .L-hills, .L-forest, .L-grass, .L-flies, .branchA, .riverside, .resort, .jeep2', { clearProps: 'transform,opacity,visibility,translate,rotate,scale' })
+      gsap.set('.sA, .sB, .names, .cloud-a, .cloud-b, .palash-grp, .jp, .jbed, .jfly, .std, .guide, .fam-face, .date-face, .board, .tint, .dusk, .glow, .rlamp, .rwin, .L-sky, .L-hills, .L-forest, .L-grass, .L-flies, .branchA, .riverside, .resort, .jeep2', { clearProps: 'transform,opacity,visibility,translate,rotate,scale' })
       const firstImgs = gsap.utils.toArray<HTMLImageElement>('.sA img, .jbed.d1 img, .jp.d1', root.current)
       const ready = Promise.all(firstImgs.map((i) => i.decode().catch(() => undefined)))
 
@@ -698,7 +698,7 @@ function Animated() {
             <div className="art">
               <img src="/v2/resort/scene.webp" alt="" fetchPriority="low" />
               {RWINDOWS.map(([x, y, w, h], i) => <i key={i} className="rwin" style={{ left: `${x}%`, top: `${y}%`, width: `${w}%`, height: `${h}%` }} />)}
-              {RLAMPS.map(([x, y], i) => <i key={i} className={`glow rlamp${i > 10 ? ' diya' : ''}`} style={{ left: `${x}%`, top: `${y}%` }} />)}
+              {RLAMPS.map(([x, y], i) => <i key={i} className="fly rlamp" style={{ left: `${x}%`, top: `${y}%`, animationDelay: `${-(i * 0.83) % 6}s` }} />)}
               <img className="jeep2" src="/story/jeep.webp" alt="Shreya and Akshay's jeep, parked at the gate" fetchPriority="low" />
             </div>
           </div>
