@@ -5,9 +5,9 @@
 /* --H = the height the story is drawn to. Scroll version and the still version: the screen with its toolbars hidden
    (lvh), since they slide away as the page scrolls. SWIPE version (html.swipe): the page never scrolls, so the
    toolbars never hide (iPhone Chrome keeps a tall bar at the bottom) and the story must fit the screen that is
-   actually showing (dvh); with lvh the bottom 12% of every scene sat behind that bar (the couple's phone, 23 Nov). */
+   actually showing (svh); with lvh the bottom 12% of every scene sat behind that bar (the couple's phone, 23 Nov). */
 :root { --H: 100lvh; }
-html.swipe { --H: 100dvh; }
+html.swipe { --H: 100svh; } /* svh, not dvh: it must not change when the keyboard opens and the browser's bars move */
 .v2 { --crop: clamp(0px, (var(--H) - 177.78vw) * 0.55, var(--H) * 0.13); position: relative; height: var(--H); overflow: hidden; overflow: clip; background: #33463A; }
 .stage { position: absolute; top: calc(-1 * var(--crop)); bottom: 0; left: 50%; translate: -50% 0; width: min(100%, var(--H) * 0.62); overflow: hidden; overflow: clip; background: #A9C4DE; perspective: 1400px; perspective-origin: 50% 100%; container-type: inline-size; }
 @media (min-aspect-ratio: 3/4) { .stage { box-shadow: 0 0 80px rgba(0, 0, 0, 0.35); } }
@@ -171,6 +171,8 @@ html:has(.v2), html:has(.v2) body { background: #33463A; }
 /* the RSVP board: the same sign, turned over and a little larger */
 .board { position: absolute; left: 0; right: 0; top: 0; margin-top: 26%; padding: 4px 2px; visibility: hidden; transform-origin: 50% 0; pointer-events: none; }
 .v2.board-live .board { pointer-events: auto; }
+/* a field has the focus: nothing may hide the board, or the field loses focus and the phone's keyboard shuts */
+.v2.typing .board { visibility: visible !important; }
 .board-in { display: grid; gap: 12px; text-align: center; }
 .board-k { margin: 0; font: 600 0.8rem/1.3 var(--f-caps); letter-spacing: 0.22em; text-transform: uppercase; color: #E9C97A; }
 .board-q { margin: 0; font: 600 clamp(1.4rem, 7cqw, 1.7rem)/1.15 var(--f-serif); color: #F6EADA; text-wrap: balance; }

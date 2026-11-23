@@ -8,7 +8,10 @@ import RsvpBoard from './RsvpBoard'
 import './v2.css'
 
 gsap.registerPlugin(ScrollTrigger, MotionPathPlugin, useGSAP)
-ScrollTrigger.config({ ignoreMobileResize: true }) // the address bar or keyboard sliding in must not re-measure the story mid-read
+// autoRefreshEvents: ScrollTrigger no longer re-measures by itself on resize or when the tab comes back: every
+// refresh takes the pinned stage out of the page and puts it back, which drops the focus from an RSVP field and shuts
+// the phone's keyboard (23 Nov). The story's own resize watcher below does it, and never while a guest is typing.
+ScrollTrigger.config({ ignoreMobileResize: true, autoRefreshEvents: 'DOMContentLoaded,load' }) // the address bar or keyboard sliding in must not re-measure the story mid-read
 if (import.meta.env.DEV) Object.assign(window, { gsap, ScrollTrigger })
 
 /*
@@ -693,7 +696,21 @@ function Animated() {
       // far the next scene waits below, was computed from a height of ~0 and stayed wrong, so the hills were covered).
       // The stage is sized in lvh, which toolbars do not change, so re-measure whenever the stage itself changes size.
       let roT = 0
-      const ro = new ResizeObserver(() => { clearTimeout(roT); roT = window.setTimeout(() => ScrollTrigger.refresh(), 120) })
+      // NEVER while a guest is typing (23 Nov, the couple's iPhone: "the keyboard is not coming up"): when the keyboard
+      // opens, the browser's bars change and the stage can change size; a refresh then rewinds the timeline for a
+      // moment, which hides the RSVP board, so the field lost focus and the keyboard shut at once. Wait until the
+      // field is left.
+      // And whatever else re-measures the page (the browser's own resize when the keyboard slides in): while a field
+      // has the focus the board is held visible by a class (`.v2.typing` in v2.css), so no rewind can hide the field.
+      const typingClass = () => root.current?.classList.toggle('typing', typing())
+      root.current!.addEventListener('focusin', typingClass); root.current!.addEventListener('focusout', () => window.setTimeout(typingClass, 0))
+      let roLater = false
+      const remeasure = () => { clearTimeout(roT); roT = window.setTimeout(() => { if (typing()) roLater = true; else ScrollTrigger.refresh() }, 120) }
+      const ro = new ResizeObserver(remeasure)
+      let lastW = innerWidth
+      const onResize = () => { if (innerWidth !== lastW) { lastW = innerWidth; remeasure() } } // width changes only: the stage's own size is watched above
+      addEventListener('resize', onResize)
+      root.current!.addEventListener('focusout', () => { if (roLater) { roLater = false; window.setTimeout(() => { if (!typing()) ScrollTrigger.refresh() }, 300) } })
       ro.observe(stage.current!)
       // a reload always opens the invitation from the top (a restored scroll position would otherwise be stopped at the first gate)
       history.scrollRestoration = 'manual'
@@ -783,7 +800,7 @@ function Animated() {
       addEventListener('v2rsvp', onRsvp)
 
       return () => {
-        removeEventListener('v2rsvp', onRsvp); ending?.kill(); unswipe()
+        removeEventListener('v2rsvp', onRsvp); ending?.kill(); unswipe(); removeEventListener('resize', onResize)
         alive = false; gsap.ticker.remove(chase); clearTimeout(timer); clearTimeout(roT); ro.disconnect(); clearInterval(watch); clearInterval(dbgTimer); dbg?.remove(); removeEventListener('wheel', onWheel); removeEventListener('keydown', open)
         ScrollTrigger.removeEventListener('refreshInit', place); ScrollTrigger.removeEventListener('refreshInit', before); ScrollTrigger.removeEventListener('refresh', after)
         removeEventListener('scroll', onScroll); removeEventListener('touchstart', down); removeEventListener('touchend', up); removeEventListener('touchcancel', up); removeEventListener('v2free', setFree); rootEl.removeEventListener('focusout', leftField)
