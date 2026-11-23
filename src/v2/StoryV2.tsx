@@ -727,13 +727,21 @@ function Animated() {
         }
         const tStart = (e: TouchEvent) => { y0 = e.touches[0].clientY }
         const tEnd = (e: TouchEvent) => { if (y0 === null) return; const dy = e.changedTouches[0].clientY - y0; y0 = null; if (Math.abs(dy) > 36) go(dy < 0 ? 1 : -1) }
-        // a wheel or trackpad sends a long tail of events: only the start of a new burst counts
-        const wheel = (e: WheelEvent) => { const now = performance.now(), fresh = now - lastW > 220; lastW = now; if (fresh && Math.abs(e.deltaY) > 2) go(e.deltaY > 0 ? 1 : -1) }
+        // a wheel or trackpad sends a long tail of events: one burst = one swipe. (23 Nov: it did nothing in the couple's
+        // Chrome. A trackpad's FIRST event is often tiny, and only that first event was looked at. Now the burst is
+        // added up, and it counts once it has moved 12px.)
+        let acc = 0, used = false
+        const wheel = (e: WheelEvent) => { const now = performance.now(); if (now - lastW > 220) { acc = 0; used = false } lastW = now; acc += e.deltaY; if (!used && Math.abs(acc) > 12) { used = true; go(acc > 0 ? 1 : -1) } }
+        // a mouse can also drag upwards, like a finger (touch itself is handled by the touch events above)
+        let my: number | null = null
+        const mDown = (e: PointerEvent) => { my = e.pointerType === 'mouse' && !(e.target as Element).closest('button, a, input, summary, label') ? e.clientY : null }
+        const mUp = (e: PointerEvent) => { if (my === null) return; const dy = e.clientY - my; my = null; if (Math.abs(dy) > 36) go(dy < 0 ? 1 : -1) }
+        addEventListener('pointerdown', mDown); addEventListener('pointerup', mUp)
         const key = (e: KeyboardEvent) => { if (typing()) return; if (['ArrowDown', 'PageDown', ' '].includes(e.key)) { e.preventDefault(); go(1) } else if (['ArrowUp', 'PageUp'].includes(e.key)) { e.preventDefault(); go(-1) } }
         addEventListener('touchstart', tStart, { passive: true }); addEventListener('touchend', tEnd, { passive: true })
         addEventListener('wheel', wheel, { passive: true }); addEventListener('keydown', key)
         if (import.meta.env.DEV) Object.assign(window, { v2swipe: go })
-        unswipe = () => { [html.style.overflow, html.style.overscrollBehavior, rootEl.style.touchAction] = was; removeEventListener('touchstart', tStart); removeEventListener('touchend', tEnd); removeEventListener('wheel', wheel); removeEventListener('keydown', key) }
+        unswipe = () => { [html.style.overflow, html.style.overscrollBehavior, rootEl.style.touchAction] = was; removeEventListener('touchstart', tStart); removeEventListener('touchend', tEnd); removeEventListener('wheel', wheel); removeEventListener('keydown', key); removeEventListener('pointerdown', mDown); removeEventListener('pointerup', mUp) }
       }
 
       // THE ENDING (the couple, 17 Nov night) · once a response is sent the hornbill leaves the board: after a "yes" it
