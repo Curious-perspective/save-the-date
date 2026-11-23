@@ -20,7 +20,7 @@ export const content = {
   sentYes: 'We can\'t wait to celebrate with you.',
   sentNo: 'We are sad to hear that.',
   sentNoNote: 'You will be missed.',
-  rsvpBy: '24 November 2026',
+  rsvpBy: '1st December 2026',
   maxGuests: 10, // later: per-family cap from personalised links (?g=)
 
   calendar: {

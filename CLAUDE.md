@@ -10,7 +10,7 @@ A mobile-first, heavily animated save-the-date website. **Its only job is to col
 - Launch deadline: **13–14 Nov 2026** (2–3 days from 11 Nov 2026). Scope must fit that.
 
 ## RSVP
-- Fields: name (required), attending yes/no (required), number of guests (shown only when attending), phone (optional), email (optional). RSVP by 24 November 2026. No grandparents' blessing line for now (`blessingsLine: ''` in `src/content.ts`).
+- Fields: name (required), attending yes/no (required), number of guests (shown only when attending), phone (optional), email (optional). RSVP by 1st December 2026 (changed from 24 November on 23 Nov). No grandparents' blessing line for now (`blessingsLine: ''` in `src/content.ts`).
 - Storage: Google Sheet via Apps Script. Server: `apps-script/Code.gs`. Client: `src/rsvp.ts` → `sendRsvp()`. Endpoint URL lives in `.env.local` as `VITE_RSVP_URL` (template: `.env.example`, never commit the real one).
 - Requests are sent as `text/plain` JSON to avoid a CORS preflight. Keep it that way.
 - **Personalised links later:** design so `?g=<guestId>` can pre-fill a name and cap the guest count. Don't build it until there's a guest list; just don't block it (e.g. keep the greeting and the guest-count max as props, not hard-coded).
