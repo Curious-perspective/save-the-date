@@ -298,6 +298,7 @@ const googleCal = 'https://calendar.google.com/calendar/render?' + new URLSearch
 // ponytail: decided once at load (a guest who flips the OS setting mid-visit reloads to switch). `?calm=1` forces it, for testing.
 // `?calm=0` forces the animated story even when the phone asks for reduced motion (to compare on one's own phone).
 const CALM = !/[?&]calm=0\b/.test(location.search) && (matchMedia('(prefers-reduced-motion: reduce)').matches || /[?&]calm=1\b/.test(location.search))
+if (SWIPE && !CALM) document.documentElement.classList.add('swipe') // v2.css: the story is then drawn to the visible screen (dvh), not the toolbar-less one
 
 function Calm() {
   const sky = <div className="scene sA"><div className="layer L-sky"><img src="/hero/sky.webp" alt="" /></div><div className="layer L-hills"><img src="/hero/hills.webp" alt="" /></div></div>

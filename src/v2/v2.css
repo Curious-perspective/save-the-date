@@ -2,8 +2,14 @@
 /* On a phone taller than the paintings (9:16) the extra height was all empty sky at the top. So there the stage is
    made taller than the screen and hangs from the bottom: --crop of it is hidden above the top edge, which brings the
    treetops, the names and everything else up and a little larger. 0 on 9:16 and wider screens. */
-.v2 { --crop: clamp(0px, (100lvh - 177.78vw) * 0.55, 13lvh); position: relative; height: 100lvh; overflow: hidden; overflow: clip; background: #33463A; }
-.stage { position: absolute; top: calc(-1 * var(--crop)); bottom: 0; left: 50%; translate: -50% 0; width: min(100%, 62lvh); overflow: hidden; overflow: clip; background: #A9C4DE; perspective: 1400px; perspective-origin: 50% 100%; container-type: inline-size; }
+/* --H = the height the story is drawn to. Scroll version and the still version: the screen with its toolbars hidden
+   (lvh), since they slide away as the page scrolls. SWIPE version (html.swipe): the page never scrolls, so the
+   toolbars never hide (iPhone Chrome keeps a tall bar at the bottom) and the story must fit the screen that is
+   actually showing (dvh); with lvh the bottom 12% of every scene sat behind that bar (the couple's phone, 23 Nov). */
+:root { --H: 100lvh; }
+html.swipe { --H: 100dvh; }
+.v2 { --crop: clamp(0px, (var(--H) - 177.78vw) * 0.55, var(--H) * 0.13); position: relative; height: var(--H); overflow: hidden; overflow: clip; background: #33463A; }
+.stage { position: absolute; top: calc(-1 * var(--crop)); bottom: 0; left: 50%; translate: -50% 0; width: min(100%, var(--H) * 0.62); overflow: hidden; overflow: clip; background: #A9C4DE; perspective: 1400px; perspective-origin: 50% 100%; container-type: inline-size; }
 @media (min-aspect-ratio: 3/4) { .stage { box-shadow: 0 0 80px rgba(0, 0, 0, 0.35); } }
 /* overflow: clip (not hidden) on the three clipping boxes: a `hidden` box is still scrollable by the browser, and focusing
    an RSVP field scrolled the whole painting sideways and up inside it. `clip` cannot scroll. (`hidden` stays as the fallback.) */
@@ -49,7 +55,7 @@ html:has(.v2), html:has(.v2) body { background: #33463A; }
 /* "You Are / Invited" (the couple's pick in docs/invite-tester, 16 Nov): Great Vibes, white, soft-light into the leaves, with a
    dark edge and deep-green halo (tester strength 0.92). Centred on the SCREEN: the stage hangs --crop above it. The blend and the
    filter sit on .std, not on the <p>: GSAP's intro makes the <p> its own stacking context, where a blend would have nothing to mix with. */
-.std { position: absolute; z-index: 2; left: 0; right: 0; top: calc(var(--crop) + 50lvh); translate: 0 -50%; text-align: center; mix-blend-mode: soft-light;
+.std { position: absolute; z-index: 2; left: 0; right: 0; top: calc(var(--crop) + var(--H) * 0.5); translate: 0 -50%; text-align: center; mix-blend-mode: soft-light;
   filter: drop-shadow(0 1px 1px rgba(40, 26, 6, 0.87)) drop-shadow(0 0 1.2cqw rgba(18, 28, 16, 0.78)) drop-shadow(0 0 3.7cqw rgba(18, 28, 16, 0.64)) drop-shadow(0 0 6.9cqw rgba(18, 28, 16, 0.46)); }
 /* soft light alone leaves the letters see-through and tinted by whatever is under them; this plain white copy on top sets how solid they are */
 .std-top { --std-white: 0.5; mix-blend-mode: normal; filter: none; opacity: var(--std-white); }
@@ -87,7 +93,7 @@ html:has(.v2), html:has(.v2) body { background: #33463A; }
    so it is never cut off on a phone, where the painting is wider than the screen */
 .art > img.jeep2 { --j2w: min(87.5%, 94cqw); position: absolute; left: calc(50% - 0.5425 * var(--j2w)); bottom: 12.6%; width: var(--j2w); height: auto; aspect-ratio: 1128 / 606; transform: scaleX(-1); filter: drop-shadow(0 5px 5px rgba(40, 30, 20, 0.25)); }
 /* the painting's own box: as tall as the stage, or as wide when the stage is wider than 9:16; bottom-anchored, centred */
-.art { position: absolute; left: 50%; bottom: 0; translate: -50% 0; width: max(100%, (100lvh + var(--crop)) * 0.5625); aspect-ratio: 864 / 1536; }
+.art { position: absolute; left: 50%; bottom: 0; translate: -50% 0; width: max(100%, (var(--H) + var(--crop)) * 0.5625); aspect-ratio: 864 / 1536; }
 .art > img { width: 100%; height: 100%; }
 /* on the painted track along the left bank (river-road.webp: track bottom at ~47.5% of the layer, x 0–35%).
    Mirrored to face right: it drives in from behind the left-edge grass and stops before the track ends at the water. */
@@ -122,7 +128,7 @@ html:has(.v2), html:has(.v2) body { background: #33463A; }
    Each cloud is placed against the PAINTING, not the stage (--art-h is the paintings' height: they are fitted by
    height, or by width on a wide stage), so the lettering stays in the open sky between the treetops at every shape. */
 .names { margin: 0; font-weight: 400; }
-.cloud { --art-h: max(100lvh + var(--crop), 177.78cqw); position: absolute; left: 4%; width: 100%; display: grid; justify-items: center; align-content: center; pointer-events: none; will-change: transform; }
+.cloud { --art-h: max(var(--H) + var(--crop), 177.78cqw); position: absolute; left: 4%; width: 100%; display: grid; justify-items: center; align-content: center; pointer-events: none; will-change: transform; }
 /* lighter than painted: paler and less saturated, like the sky's own far clouds (a filter, not a fade) */
 .cloud > img { position: absolute; top: 0; width: 150%; max-width: none; height: auto; filter: saturate(0.52) brightness(1.15) contrast(0.9); }
 .cloud-a { z-index: 2; bottom: calc(var(--art-h) * 0.692 - 13.7cqw + 27cqw); height: 19.6cqw; padding-top: 3.5cqw; }
