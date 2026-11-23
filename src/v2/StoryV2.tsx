@@ -79,7 +79,8 @@ const PACE: [number, number, number][] = [
 ]
 // where the story rests, in TIMELINE time: invited · the names joined · the jeep at rest with the families · the
 // resort with the date · dusk with every light on · the RSVP
-const STOPS = [0, 1.8, 4.2, 8.6, 10.6, U]
+// (23 Nov, the couple: no stop at dusk before the RSVP. The date leaves, dusk falls and the RSVP comes in one go.)
+const STOPS = [0, 1.8, 4.2, 8.6, U]
 const BOARD = (/[?&]b=(wood|paper|rock)\b/.exec(location.search)?.[1] ?? 'paper') as 'wood' | 'paper' | 'rock'
 const ROCK = BOARD === 'rock'
 const DIR = ROCK ? 1 : -1 // the carrier leaves upwards (hung) or downwards (a rock sinking)
