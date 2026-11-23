@@ -39,15 +39,19 @@ const SWIPE = !/[?&]swipe=0\b/.test(location.search)
 function Nudge() {
   const [show, setShow] = useState(false)
   useEffect(() => {
-    let p = 0, timer = 0
-    const arm = () => { setShow(false); clearTimeout(timer); timer = window.setTimeout(() => setShow((SWIPE || p > 0.02) && p < 0.985), SWIPE ? 2500 : 4000) }
-    const prog = (e: Event) => { const v = (e as CustomEvent<number>).detail; if (Math.abs(v - p) > 1e-5) { p = v; arm() } } // the story is moving: no arrow yet
+    let p = 0, timer = 0, live = !SWIPE // swipe: only once the animated story has said it is at rest (the still version never does)
+    const ok = () => live && (SWIPE || p > 0.02) && p < 0.985
+    // swipe version (the couple, 23 Nov: "the moment the animation gets over, not wait"): the story says when a scene
+    // has finished (`v2rest`) and the arrow shows at once; while it plays, the arrow is hidden. A gesture that did
+    // not start a scene (too short) only hides it for a moment.
+    const arm = () => { setShow(false); clearTimeout(timer); timer = window.setTimeout(() => setShow(ok()), SWIPE ? 600 : 4000) }
+    const prog = (e: Event) => { const v = (e as CustomEvent<number>).detail; if (Math.abs(v - p) > 1e-5) { p = v; if (SWIPE) { setShow(false); clearTimeout(timer) } else arm() } }
+    const rest = () => { live = true; clearTimeout(timer); setShow(ok()) }
     const moves = ['scroll', 'wheel', 'touchmove', 'keydown'] as const
     moves.forEach((m) => addEventListener(m, arm, { passive: true }))
-    addEventListener('v2progress', prog)
-    // the first one waits for the loader to lift and the forest to stand up
-    timer = window.setTimeout(arm, 2500)
-    return () => { clearTimeout(timer); moves.forEach((m) => removeEventListener(m, arm)); removeEventListener('v2progress', prog) }
+    addEventListener('v2progress', prog); addEventListener('v2rest', rest)
+    if (!SWIPE) arm()
+    return () => { clearTimeout(timer); moves.forEach((m) => removeEventListener(m, arm)); removeEventListener('v2progress', prog); removeEventListener('v2rest', rest) }
   }, [])
   return <p className={`nudge${SWIPE ? '' : ' down'}${show ? ' is-on' : ''}`} aria-hidden="true"><i />{SWIPE && <span>swipe up</span>}</p>
 }

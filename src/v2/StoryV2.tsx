@@ -723,7 +723,7 @@ function Animated() {
           if (dir < 0) parts.reverse()
           const seq = gsap.timeline({ paused: true })
           parts.forEach((p) => seq.to(clock, { t: p.to, duration: p.dur, ease: 'none' }))
-          gsap.to(seq, { progress: 1, duration: seq.duration() / (dir > 0 ? 1 : 2.2), ease: 'sine.inOut', onUpdate: () => { head.s = toS(clock.t); tlNow.time(clock.t); show(head.s) }, onComplete: () => { playing = false; seq.kill() } })
+          gsap.to(seq, { progress: 1, duration: seq.duration() / (dir > 0 ? 1 : 2.2), ease: 'sine.inOut', onUpdate: () => { head.s = toS(clock.t); tlNow.time(clock.t); show(head.s) }, onComplete: () => { playing = false; seq.kill(); dispatchEvent(new Event('v2rest')) } })
         }
         const tStart = (e: TouchEvent) => { y0 = e.touches[0].clientY }
         const tEnd = (e: TouchEvent) => { if (y0 === null) return; const dy = e.changedTouches[0].clientY - y0; y0 = null; if (Math.abs(dy) > 36) go(dy < 0 ? 1 : -1) }
@@ -740,6 +740,8 @@ function Animated() {
         const key = (e: KeyboardEvent) => { if (typing()) return; if (['ArrowDown', 'PageDown', ' '].includes(e.key)) { e.preventDefault(); go(1) } else if (['ArrowUp', 'PageUp'].includes(e.key)) { e.preventDefault(); go(-1) } }
         addEventListener('touchstart', tStart, { passive: true }); addEventListener('touchend', tEnd, { passive: true })
         addEventListener('wheel', wheel, { passive: true }); addEventListener('keydown', key)
+        // the opening counts as a scene too: the arrow comes the moment the forest has stood up
+        intro.eventCallback('onComplete', () => dispatchEvent(new Event('v2rest')))
         if (import.meta.env.DEV) Object.assign(window, { v2swipe: go })
         unswipe = () => { [html.style.overflow, html.style.overscrollBehavior, rootEl.style.touchAction] = was; removeEventListener('touchstart', tStart); removeEventListener('touchend', tEnd); removeEventListener('wheel', wheel); removeEventListener('keydown', key); removeEventListener('pointerdown', mDown); removeEventListener('pointerup', mUp) }
       }
