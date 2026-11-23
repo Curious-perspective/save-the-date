@@ -57,7 +57,26 @@ const BEATS = BEATS_T.filter((b) => !ZONES.some(([a, len, w]) => w < len && b > 
 // up and we directly reach the end"): ONE SWIPE = ONE SCENE. The page does not scroll at all; a swipe, a wheel burst
 // or an arrow key, however hard, plays the story on to the next stop in STOPS at its own pace, and swipes made while
 // it is playing are ignored. A test link beside the scroll version, for the couple to compare on their phones.
-const SWIPE = /[?&]swipe=1\b/.test(location.search)
+// (23 Nov: the couple chose it. Swipe is now what guests get; `?swipe=0` keeps the old scroll version for comparison.)
+const SWIPE = !/[?&]swipe=0\b/.test(location.search)
+// THE PACE of the swipe version (the couple: "everything is going to have different speed… the leaves parting away
+// needs to be slow and one by one"). [from, to, seconds]: how long each stretch of the TIMELINE takes to play.
+// The stretches run on from one another and must cover 0..U; to retime a moment, change its seconds.
+const PACE: [number, number, number][] = [
+  [0, 0.34, 2.6],     // the near leaves part
+  [0.34, 0.65, 2.6],  // the middle leaves part
+  [0.65, 0.97, 2.6],  // the far leaves part; "You Are Invited" fades
+  [0.97, 1.8, 3.2],   // the two name clouds drift in and meet
+  [1.8, 2.95, 3.4],   // the clouds leave sideways, the forest sinks, the river road appears
+  [2.95, 4.2, 4.0],   // the jeep drives in and stops, the families board comes down, the hornbill lands on the bonnet
+  [4.2, 5.45, 3.4],   // the jeep drives away, the hornbill lifts off
+  [5.45, 6.25, 0.5],  // nothing moves here
+  [6.25, 7.2, 2.8],   // the families board lifts, the river sinks, the resort rises
+  [7.2, 8.6, 3.6],    // the jeep rolls up to the gate, the date board comes down, the hornbill lands
+  [8.6, 9.45, 1.8],   // the date board goes up
+  [9.45, 10.6, 4.2],  // dusk falls, the windows light, the fireflies come out
+  [10.6, U, 2.8],     // the RSVP board comes down, the hornbill lands on it
+]
 // where the story rests, in TIMELINE time: invited · the names joined · the jeep at rest with the families · the
 // resort with the date · dusk with every light on · the RSVP
 const STOPS = [0, 1.8, 4.2, 8.6, 10.6, U]
@@ -690,13 +709,21 @@ function Animated() {
         const html = document.documentElement, was = [html.style.overflow, html.style.overscrollBehavior, rootEl.style.touchAction]
         html.style.overflow = 'hidden'; html.style.overscrollBehavior = 'none'; rootEl.style.touchAction = 'none'
         let playing = false, y0: number | null = null, lastW = 0
+        const clock = { t: 0 }
         const go = (dir: 1 | -1) => {
           if (playing || typing() || !intro.totalProgress() || intro.isActive()) return
           const t = tlNow.time(), next = dir > 0 ? STOPS.find((b) => b > t + 0.01) : [...STOPS].reverse().find((b) => b < t - 0.01)
           if (next === undefined) return
           playing = true
-          const to = toS(next), dur = gsap.utils.clamp(1.8, 6, Math.abs(to - head.s) / 0.62)
-          gsap.to(head, { s: to, duration: dir > 0 ? dur : dur * 0.6, ease: 'sine.inOut', overwrite: true, onUpdate: () => { tlNow.time(toT(head.s)); show(head.s) }, onComplete: () => { playing = false } })
+          // play each stretch between here and the next stop at its own pace (PACE), with one soft start and stop
+          // over the whole scene; going back runs the same stretches at 2.2x the speed
+          clock.t = t
+          const lo = Math.min(t, next), hi = Math.max(t, next)
+          const parts = PACE.filter(([a, b]) => b > lo + 1e-6 && a < hi - 1e-6).map(([a, b, sec]) => { const x = Math.max(a, lo), y = Math.min(b, hi); return { to: dir > 0 ? y : x, dur: sec * (y - x) / (b - a) } })
+          if (dir < 0) parts.reverse()
+          const seq = gsap.timeline({ paused: true })
+          parts.forEach((p) => seq.to(clock, { t: p.to, duration: p.dur, ease: 'none' }))
+          gsap.to(seq, { progress: 1, duration: seq.duration() / (dir > 0 ? 1 : 2.2), ease: 'sine.inOut', onUpdate: () => { head.s = toS(clock.t); tlNow.time(clock.t); show(head.s) }, onComplete: () => { playing = false; seq.kill() } })
         }
         const tStart = (e: TouchEvent) => { y0 = e.touches[0].clientY }
         const tEnd = (e: TouchEvent) => { if (y0 === null) return; const dy = e.changedTouches[0].clientY - y0; y0 = null; if (Math.abs(dy) > 36) go(dy < 0 ? 1 : -1) }
@@ -854,7 +881,7 @@ function Animated() {
           {/* the same words again, painted plainly on top: how solid the white is (--std-white in v2.css) */}
           <div className="std std-top" aria-hidden="true"><p className="std-t">{content.opening}</p></div>
         </div>
-        <p className="hint" aria-hidden="true">{SWIPE ? 'swipe up' : 'scroll gently'}</p>
+        {!SWIPE && <p className="hint" aria-hidden="true">scroll gently</p>}
 
         {/* the hornbill */}
         <div className="guide" aria-hidden="true">

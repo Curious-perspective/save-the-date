@@ -31,20 +31,25 @@ function Music() {
   return <button type="button" className={`music${on ? ' is-on' : ''}`} aria-pressed={on} aria-label={on ? 'Turn the music off' : 'Play music'} onPointerDown={(e) => e.stopPropagation()} onPointerUp={(e) => e.stopPropagation()} onClick={toggle}><span aria-hidden="true">♪</span>{on ? '' : wanted.current ? ' Tap for music' : ' Music off'}</button>
 }
 
-// THE NUDGE: a small arrow at the bottom when the guest has stopped scrolling for 4 s part-way through the story.
-// (`v2progress` only comes from the animated story, so the still version never shows it.)
+// THE NUDGE: a small arrow at the bottom when the guest has stopped part-way through the story.
+// Swipe version (what guests get): an arrow pointing UP with "swipe up" under it, 2.5 s after a scene has finished
+// playing, on every screen from the first until the RSVP board is down. Scroll version (`?swipe=0`): the old bare
+// down arrow after 4 s. (`v2progress` only comes from the animated story, so the still version never shows it.)
+const SWIPE = !/[?&]swipe=0\b/.test(location.search)
 function Nudge() {
   const [show, setShow] = useState(false)
   useEffect(() => {
     let p = 0, timer = 0
-    const arm = () => { setShow(false); clearTimeout(timer); timer = window.setTimeout(() => setShow(p > 0.02 && p < 0.985), 4000) }
-    const prog = (e: Event) => { p = (e as CustomEvent<number>).detail }
+    const arm = () => { setShow(false); clearTimeout(timer); timer = window.setTimeout(() => setShow((SWIPE || p > 0.02) && p < 0.985), SWIPE ? 2500 : 4000) }
+    const prog = (e: Event) => { const v = (e as CustomEvent<number>).detail; if (Math.abs(v - p) > 1e-5) { p = v; arm() } } // the story is moving: no arrow yet
     const moves = ['scroll', 'wheel', 'touchmove', 'keydown'] as const
     moves.forEach((m) => addEventListener(m, arm, { passive: true }))
-    addEventListener('v2progress', prog); arm()
+    addEventListener('v2progress', prog)
+    // the first one waits for the loader to lift and the forest to stand up
+    timer = window.setTimeout(arm, 2500)
     return () => { clearTimeout(timer); moves.forEach((m) => removeEventListener(m, arm)); removeEventListener('v2progress', prog) }
   }, [])
-  return <i className={`nudge${show ? ' is-on' : ''}`} aria-hidden="true" />
+  return <p className={`nudge${SWIPE ? '' : ' down'}${show ? ' is-on' : ''}`} aria-hidden="true"><i />{SWIPE && <span>swipe up</span>}</p>
 }
 
 const App = () => <main><StoryV2 /><Music /><Nudge /></main>
