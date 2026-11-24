@@ -15,9 +15,11 @@ import './v2.css'
 // listener is registered BEFORE ScrollTrigger's own (it must stay above registerPlugin) and stops the event. The
 // story re-measures itself instead (the stage's ResizeObserver and `v2width`), and never while a field has the cursor.
 let lastWidth = innerWidth
+let syncH = () => {} // set further down: draws the story to the window's real height
 addEventListener('resize', (e) => {
   if (!SWIPE || CALM) return
   e.stopImmediatePropagation()
+  syncH()
   if (innerWidth !== lastWidth) { lastWidth = innerWidth; dispatchEvent(new Event('v2width')) }
 }, true)
 gsap.registerPlugin(ScrollTrigger, MotionPathPlugin, useGSAP)
@@ -321,6 +323,18 @@ const CALM = !/[?&]calm=0\b/.test(location.search) && (matchMedia('(prefers-redu
 {
   const html = document.documentElement
   const field = (el: EventTarget | null) => el instanceof Element && !!el.closest('.v2') && /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName)
+  // SWIPE: `--H` is the window's own height in px, set from here, NOT a CSS unit (24 Nov, the couple's iPhone: the
+  // link opened from WhatsApp drew the story about half size, because Chrome on iPhone can report a stale, too-small
+  // `svh` when the page opens while its window is short; `innerHeight` is the one number that tracked the real
+  // window in every report from that phone). It follows every window resize, except while a field has the cursor.
+  const live = SWIPE && !CALM
+  const frozen = () => html.classList.contains('typing')
+  syncH = () => { if (live && !frozen() && innerHeight > 100) html.style.setProperty('--H', innerHeight + 'px') }
+  syncH()
+  for (const ms of [250, 1000, 2500]) setTimeout(syncH, ms) // a window that settles late (opened from another app)
+  addEventListener('pageshow', syncH); addEventListener('orientationchange', () => setTimeout(syncH, 300))
+  // belt and braces: also on every touch and whenever the visible area changes, so a missed resize cannot leave it small
+  addEventListener('touchstart', syncH, { passive: true }); visualViewport?.addEventListener('resize', syncH)
   // Leaving is not taken from `focusout` (an iPhone fires none when the field is removed, as on Next or Send): while
   // frozen, a timer looks every 0.25 s whether a field still has the cursor. `html.typing` (v2.css keeps the board
   // visible under it) and the `v2left` event (the story's postponed re-measure) hang off the same timer.
@@ -330,8 +344,9 @@ const CALM = !/[?&]calm=0\b/.test(location.search) && (matchMedia('(prefers-redu
     const full = parseFloat(html.style.getPropertyValue('--H')) || 0
     if ((visualViewport?.height ?? innerHeight) < full * 0.85 && tries++ < 12) return // the keyboard is still on its way down
     clearInterval(watch); watch = 0; tries = 0
-    html.style.removeProperty('--H'); html.classList.remove('typing')
-    if (SWIPE && !CALM && scrollY) scrollTo(0, 0) // the browser may have panned the locked page to show the field; nobody can drag it back
+    html.classList.remove('typing')
+    if (live) syncH(); else html.style.removeProperty('--H')
+    if (live && scrollY) scrollTo(0, 0) // the browser may have panned the locked page to show the field; nobody can drag it back
     dispatchEvent(new Event('v2left'))
     // (24 Nov, the couple's iPhone: a faint dark band stayed across the dusk picture after the keyboard had gone. No
     // element ends there, so it is the browser not redrawing a strip of the blended dusk overlays; make it redraw them.)
@@ -341,11 +356,13 @@ const CALM = !/[?&]calm=0\b/.test(location.search) && (matchMedia('(prefers-redu
   }
   addEventListener('focusin', (e) => {
     if (!field(e.target)) return
-    html.classList.add('typing')
-    if (!html.style.getPropertyValue('--H')) {
-      const probe = document.body.appendChild(Object.assign(document.createElement('div'), { style: 'position:fixed;top:0;left:0;width:0;height:var(--H);visibility:hidden;pointer-events:none' }))
-      const h = probe.offsetHeight; probe.remove()
-      if (h > 100) html.style.setProperty('--H', h + 'px')
+    if (!frozen()) {
+      html.classList.add('typing')
+      if (!live) { // the scroll and still versions use CSS units: freeze those at their size in px
+        const probe = document.body.appendChild(Object.assign(document.createElement('div'), { style: 'position:fixed;top:0;left:0;width:0;height:var(--H);visibility:hidden;pointer-events:none' }))
+        const h = probe.offsetHeight; probe.remove()
+        if (h > 100) html.style.setProperty('--H', h + 'px')
+      }
     }
     if (!watch) watch = window.setInterval(check, 250)
   })
