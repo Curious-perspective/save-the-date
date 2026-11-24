@@ -314,6 +314,34 @@ const googleCal = 'https://calendar.google.com/calendar/render?' + new URLSearch
 // ponytail: decided once at load (a guest who flips the OS setting mid-visit reloads to switch). `?calm=1` forces it, for testing.
 // `?calm=0` forces the animated story even when the phone asks for reduced motion (to compare on one's own phone).
 const CALM = !/[?&]calm=0\b/.test(location.search) && (matchMedia('(prefers-reduced-motion: reduce)').matches || /[?&]calm=1\b/.test(location.search))
+// THE SCENE KEEPS ITS SIZE WHILE THE KEYBOARD IS UP (24 Nov, the couple's iPhone: "it works but it goes completely
+// off"). Chrome on iPhone shrinks the whole window for the keyboard, and svh/lvh shrink with it, so the story, drawn
+// to `--H`, collapsed to a tiny column. The moment a field gets the cursor (before the keyboard moves anything) `--H`
+// is frozen at its size in px; it is released once the field is left AND the window is back to full height.
+{
+  const html = document.documentElement
+  const field = (el: EventTarget | null) => el instanceof Element && !!el.closest('.v2') && /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName)
+  let thaw = 0
+  addEventListener('focusin', (e) => {
+    if (!field(e.target)) return
+    clearTimeout(thaw)
+    if (html.style.getPropertyValue('--H')) return // already frozen (moving from one field to the next)
+    const probe = document.body.appendChild(Object.assign(document.createElement('div'), { style: 'position:fixed;top:0;left:0;width:0;height:var(--H);visibility:hidden;pointer-events:none' }))
+    const h = probe.offsetHeight; probe.remove()
+    if (h > 100) html.style.setProperty('--H', h + 'px')
+  })
+  addEventListener('focusout', () => {
+    clearTimeout(thaw)
+    let tries = 0
+    const release = () => {
+      if (field(document.activeElement)) return
+      const full = parseFloat(html.style.getPropertyValue('--H')) || 0
+      if ((visualViewport?.height ?? innerHeight) < full * 0.85 && tries++ < 15) { thaw = window.setTimeout(release, 200); return } // the keyboard is still on its way down
+      html.style.removeProperty('--H')
+    }
+    thaw = window.setTimeout(release, 500)
+  })
+}
 if (SWIPE && !CALM) document.documentElement.classList.add('swipe') // v2.css: the story is then drawn to the visible screen (dvh), not the toolbar-less one
 
 function Calm() {

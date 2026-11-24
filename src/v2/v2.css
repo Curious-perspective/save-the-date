@@ -257,7 +257,7 @@ html:has(.v2), html:has(.v2) body { background: #33463A; }
 /* ---------- reduced motion: the same story as four still panels down the page (<Calm /> in StoryV2.tsx) ----------
    No pin, no scrub. Each panel is a .stage of its own, one screen tall; what the timeline would have revealed is shown. */
 .v2.calm { --crop: 0px; height: auto; overflow: visible; }
-.calm .stage { position: relative; top: 0; height: 100lvh; }
+.calm .stage { position: relative; top: 0; height: var(--H); }
 .calm .resort, .calm .rwin, .calm .rlamp, .calm .plank-date, .calm .board { visibility: visible; }
 .calm .board { pointer-events: auto; }
 .calm-bird { position: absolute; z-index: 9; width: 15.6cqw; height: auto; filter: drop-shadow(0 6px 6px rgba(40, 50, 40, 0.25)); }
