@@ -23,6 +23,8 @@ jobs:
       - run: npm run build
         env:
           BASE_PATH: /${{ github.event.repository.name }}/
+          # where RSVPs are sent (the Google Sheet's web-app link); set as a repository variable
+          VITE_RSVP_URL: ${{ vars.VITE_RSVP_URL }}
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist

@@ -333,6 +333,11 @@ const CALM = !/[?&]calm=0\b/.test(location.search) && (matchMedia('(prefers-redu
     html.style.removeProperty('--H'); html.classList.remove('typing')
     if (SWIPE && !CALM && scrollY) scrollTo(0, 0) // the browser may have panned the locked page to show the field; nobody can drag it back
     dispatchEvent(new Event('v2left'))
+    // (24 Nov, the couple's iPhone: a faint dark band stayed across the dusk picture after the keyboard had gone. No
+    // element ends there, so it is the browser not redrawing a strip of the blended dusk overlays; make it redraw them.)
+    const veils = document.querySelectorAll<HTMLElement>('.v2 .tint, .v2 .dusk')
+    veils.forEach((v) => { v.style.transform = 'translateZ(0)' })
+    requestAnimationFrame(() => requestAnimationFrame(() => veils.forEach((v) => { v.style.transform = '' })))
   }
   addEventListener('focusin', (e) => {
     if (!field(e.target)) return
