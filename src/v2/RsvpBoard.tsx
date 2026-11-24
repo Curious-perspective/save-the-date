@@ -48,7 +48,6 @@ export default function RsvpBoard({ onSent }: { onSent: (a: 'yes' | 'no' | null)
       <p className="board-k">Thank you, {sent.name.split(' ')[0]} Ji</p>
       <p className="board-q">{sent.attending === 'yes' ? content.sentYes : content.sentNo}</p>
       <p className="board-note">{sent.attending === 'yes' ? content.formal : content.sentNoNote}</p>
-      <button type="button" className="board-link" onClick={() => { onSent(null); setSent(null); setStep(1); try { localStorage.removeItem(SENT_KEY) } catch { /* ignore */ } }}>Send another response</button>
     </div>
   )
 
