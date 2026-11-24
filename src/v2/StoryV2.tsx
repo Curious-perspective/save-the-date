@@ -726,7 +726,12 @@ function Animated() {
       let unswipe = () => {}
       if (SWIPE) {
         const html = document.documentElement, was = [html.style.overflow, html.style.overscrollBehavior, rootEl.style.touchAction]
-        html.style.overflow = 'hidden'; html.style.overscrollBehavior = 'none'; rootEl.style.touchAction = 'none'
+        html.style.overflow = 'hidden'; html.style.overscrollBehavior = 'none'
+        // (24 Nov: `touch-action: none` on the whole story is gone. It was the one thing swipe mode put on every
+        // ancestor of the RSVP fields, and on the couple's iPhone the keyboard would not open. A finger dragging
+        // the page is now stopped by cancelling touchmove instead, and never on a field.)
+        const noDrag = (e: TouchEvent) => { if (!(e.target as Element).closest?.('input, textarea, select')) e.preventDefault() }
+        addEventListener('touchmove', noDrag, { passive: false })
         let playing = false, y0: number | null = null, lastW = 0
         const clock = { t: 0 }
         const go = (dir: 1 | -1) => {
@@ -762,7 +767,7 @@ function Animated() {
         // the opening counts as a scene too: the arrow comes the moment the forest has stood up
         intro.eventCallback('onComplete', () => dispatchEvent(new Event('v2rest')))
         if (import.meta.env.DEV) Object.assign(window, { v2swipe: go })
-        unswipe = () => { [html.style.overflow, html.style.overscrollBehavior, rootEl.style.touchAction] = was; removeEventListener('touchstart', tStart); removeEventListener('touchend', tEnd); removeEventListener('wheel', wheel); removeEventListener('keydown', key); removeEventListener('pointerdown', mDown); removeEventListener('pointerup', mUp) }
+        unswipe = () => { [html.style.overflow, html.style.overscrollBehavior, rootEl.style.touchAction] = was; removeEventListener('touchmove', noDrag); removeEventListener('touchstart', tStart); removeEventListener('touchend', tEnd); removeEventListener('wheel', wheel); removeEventListener('keydown', key); removeEventListener('pointerdown', mDown); removeEventListener('pointerup', mUp) }
       }
 
       // THE ENDING (the couple, 17 Nov night) · once a response is sent the hornbill leaves the board: after a "yes" it

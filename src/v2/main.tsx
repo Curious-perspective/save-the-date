@@ -58,4 +58,22 @@ function Nudge() {
 
 const App = () => <main><StoryV2 /><Music /><Nudge /></main>
 
+// DEV ONLY (24 Nov, temporary: remove once the iPhone keyboard is sorted): the phone reports what happens around an
+// RSVP field to the dev server on the Mac (`/__log`, written to node_modules/.cache/phone.log). Nothing leaves the Wi-Fi.
+if (import.meta.env.DEV) {
+  const t0 = performance.now()
+  const say = (m: string) => { try { navigator.sendBeacon('/__log', `${Math.round(performance.now() - t0)} ${m}`) } catch { /* ignore */ } }
+  const name = (e: EventTarget | null) => { const el = e as Element | null; return el?.tagName ? `${el.tagName.toLowerCase()}${el.id ? '#' + el.id : ''}.${String(el.className).split(' ')[0]}` : String(e) }
+  say(`open ${navigator.userAgent} inner ${innerWidth}x${innerHeight} vv ${Math.round(visualViewport?.height ?? 0)}`)
+  for (const ev of ['touchstart', 'touchend', 'click', 'focusin', 'focusout'] as const) addEventListener(ev, (e) => {
+    const hit = 'changedTouches' in e ? (e as TouchEvent).changedTouches[0] : (e as MouseEvent)
+    const under = 'clientX' in hit ? name(document.elementFromPoint(hit.clientX, hit.clientY)) : ''
+    say(`${ev} ${name(e.target)} under ${under} active ${name(document.activeElement)} prevented ${e.defaultPrevented}`)
+    if (ev === 'focusin') for (const ms of [100, 500, 1500]) setTimeout(() => say(`+${ms} active ${name(document.activeElement)} vv ${Math.round(visualViewport?.height ?? 0)} inner ${innerHeight} scrollY ${Math.round(scrollY)}`), ms)
+  }, true)
+  addEventListener('resize', () => say(`resize inner ${innerWidth}x${innerHeight}`))
+  visualViewport?.addEventListener('resize', () => say(`vv ${Math.round(visualViewport!.height)}`))
+  addEventListener('error', (e) => say(`error ${e.message}`))
+}
+
 createRoot(document.getElementById('root')!).render(<StrictMode><App /></StrictMode>)
