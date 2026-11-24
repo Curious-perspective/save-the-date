@@ -7,6 +7,19 @@ import { content } from '../content'
 import RsvpBoard from './RsvpBoard'
 import './v2.css'
 
+// THE iPHONE KEYBOARD (24 Nov, proven from the couple's phone: tap a field → the field gets the cursor → the keyboard
+// starts to open → Chrome on iPhone shrinks the window from 662 to 327px → 0.2 s later ScrollTrigger re-measures →
+// that takes the pinned story out of the page and puts it back → the cursor is gone and the keyboard shuts).
+// `ignoreMobileResize` does not help: it still re-measures when the height changes by more than a quarter, and a
+// keyboard is half the screen. So in the swipe version ScrollTrigger never hears a window resize at all: this
+// listener is registered BEFORE ScrollTrigger's own (it must stay above registerPlugin) and stops the event. The
+// story re-measures itself instead (the stage's ResizeObserver and `v2width`), and never while a field has the cursor.
+let lastWidth = innerWidth
+addEventListener('resize', (e) => {
+  if (!SWIPE || CALM) return
+  e.stopImmediatePropagation()
+  if (innerWidth !== lastWidth) { lastWidth = innerWidth; dispatchEvent(new Event('v2width')) }
+}, true)
 gsap.registerPlugin(ScrollTrigger, MotionPathPlugin, useGSAP)
 // autoRefreshEvents: ScrollTrigger no longer re-measures by itself on resize or when the tab comes back: every
 // refresh takes the pinned stage out of the page and puts it back, which drops the focus from an RSVP field and shuts
@@ -603,7 +616,7 @@ function Animated() {
         dispatchEvent(new CustomEvent('v2progress', { detail: t / US }))
       }
       const drive = (now = false) => {
-        if (typing() || (SWIPE && !now)) return // the keyboard opening or a field scrolling into view must not move the story (swipe mode: the scroll never drives it)
+        if (typing() || SWIPE) return // the keyboard opening or a field scrolling into view must not move the story (swipe mode: the scroll never drives it)
         // a page opened in a tab that is not showing yet has no height: the pinned stretch is then 0 long, its progress
         // reads as 1, and the story jumped to the RSVP (and the later refresh scrolled the page there). Wait for a real size.
         if (!st || st.end - st.start < 10) return
@@ -611,7 +624,12 @@ function Animated() {
         if (now) { gsap.killTweensOf(head); setS(want) } else if (!SMOOTH) gsap.to(head, { s: want, duration: 1, ease: 'expo', overwrite: true, onUpdate: () => { tlNow.time(toT(head.s)) } })
         show(SMOOTH && !now ? head.s : want) // SMOOTH: side effects follow the story, which may still be catching up
       }
-      st = ScrollTrigger.create({ id: 'v2', trigger: root.current, start: 'top top', end: () => '+=' + innerHeight * 0.8915 * US, pin: true, onUpdate: () => drive() })
+      st = ScrollTrigger.create({ id: 'v2', trigger: root.current, start: 'top top', end: () => '+=' + innerHeight * 0.8915 * US, onUpdate: () => drive(),
+        // SWIPE: NOT pinned. The page never scrolls there, so a pin does nothing useful, and a pinned element is taken
+        // out of the page and put back on every refresh, which drops the cursor from an RSVP field and shuts the
+        // iPhone keyboard. (The refresh that did it on the couple's phone came from ScrollTrigger's own
+        // "(orientation: portrait)" watcher: with the keyboard up, Chrome's window is wider than it is tall.)
+        pin: !SWIPE })
       const gates = (t: number) => { lo = Math.max(0, ...BEATS.filter((b) => b < t - 0.001)); hi = Math.min(US, ...BEATS.filter((b) => b > t + 0.001)) }
       const settle = () => {
         n.settle++
@@ -707,18 +725,17 @@ function Animated() {
       let roLater = false
       const remeasure = () => { clearTimeout(roT); roT = window.setTimeout(() => { if (typing()) roLater = true; else ScrollTrigger.refresh() }, 120) }
       const ro = new ResizeObserver(remeasure)
-      let lastW = innerWidth
-      const onResize = () => { if (innerWidth !== lastW) { lastW = innerWidth; remeasure() } } // width changes only: the stage's own size is watched above
-      addEventListener('resize', onResize)
+      const onResize = () => remeasure() // a real change of width (rotation, a desktop window): see the top of the file
+      addEventListener(SWIPE ? 'v2width' : 'resize', onResize)
       root.current!.addEventListener('focusout', () => { if (roLater) { roLater = false; window.setTimeout(() => { if (!typing()) ScrollTrigger.refresh() }, 300) } })
       ro.observe(stage.current!)
       // a reload always opens the invitation from the top (a restored scroll position would otherwise be stopped at the first gate)
       history.scrollRestoration = 'manual'
-      free = true; drive(true); free = false; gates(head.s)
+      if (SWIPE) { setS(0); show(0) } else { free = true; drive(true); free = false; gates(head.s) }
       if (import.meta.env.DEV) {
         // preview aid: v2go(t) puts the story at t at once, through the gates (the old `st.animation` helpers still read the timeline)
         Object.assign(st, { animation: tlNow })
-        Object.assign(window, { v2tl: tlNow, v2go: (t: number) => { t = toS(t); /* v2go takes TIMELINE time, as before */ free = true; st.scroll(st.start + (t / US) * (st.end - st.start)); ScrollTrigger.update(); drive(true); free = false; gates(t); return tlNow.time() }, v2gates: () => [lo, hi] })
+        Object.assign(window, { v2tl: tlNow, v2go: (t: number) => { t = toS(t); /* v2go takes TIMELINE time, as before */ if (SWIPE) { gsap.killTweensOf(head); setS(t); show(t); return tlNow.time() } free = true; st.scroll(st.start + (t / US) * (st.end - st.start)); ScrollTrigger.update(); drive(true); free = false; gates(t); return tlNow.time() }, v2gates: () => [lo, hi] })
       }
 
       // ONE SWIPE = ONE SCENE (`?swipe=1`). The page is locked (no scroll, no pull-to-refresh); each gesture tweens the
@@ -805,7 +822,7 @@ function Animated() {
       addEventListener('v2rsvp', onRsvp)
 
       return () => {
-        removeEventListener('v2rsvp', onRsvp); ending?.kill(); unswipe(); removeEventListener('resize', onResize)
+        removeEventListener('v2rsvp', onRsvp); ending?.kill(); unswipe(); removeEventListener(SWIPE ? 'v2width' : 'resize', onResize)
         alive = false; gsap.ticker.remove(chase); clearTimeout(timer); clearTimeout(roT); ro.disconnect(); clearInterval(watch); clearInterval(dbgTimer); dbg?.remove(); removeEventListener('wheel', onWheel); removeEventListener('keydown', open)
         ScrollTrigger.removeEventListener('refreshInit', place); ScrollTrigger.removeEventListener('refreshInit', before); ScrollTrigger.removeEventListener('refresh', after)
         removeEventListener('scroll', onScroll); removeEventListener('touchstart', down); removeEventListener('touchend', up); removeEventListener('touchcancel', up); removeEventListener('v2free', setFree); rootEl.removeEventListener('focusout', leftField)
