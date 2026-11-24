@@ -21,7 +21,8 @@ export default function RsvpBoard({ onSent }: { onSent: (a: 'yes' | 'no' | null)
   const max = content.maxGuests
 
   const choose = (a: 'yes' | 'no') => { setAttending(a); setError(''); setStep(2) }
-  const toStep3 = (e: FormEvent) => { e.preventDefault(); if (!name.trim()) return setError('Please add your name.'); setError(''); setStep(3) }
+  const leave = () => (document.activeElement as HTMLElement | null)?.blur() // a field that is about to be removed must be left first: iPhones fire no blur for a removed field
+  const toStep3 = (e: FormEvent) => { e.preventDefault(); if (!name.trim()) return setError('Please add your name.'); leave(); setError(''); setStep(3) }
   async function submit(e: FormEvent) {
     e.preventDefault()
     if (phone && !/^\+?[\d\s-]{7,16}$/.test(phone)) return setError('That phone number doesn\'t look right. You can leave it empty.')
@@ -29,7 +30,7 @@ export default function RsvpBoard({ onSent }: { onSent: (a: 'yes' | 'no' | null)
     // ponytail: `?demo=1` shows the ending without sending anything (for the couple to review before the sheet is connected); remove at launch
     const demo = new URLSearchParams(location.search).has('demo')
     if (!demo && !import.meta.env.VITE_RSVP_URL) return setError('RSVPs aren\'t connected yet. Please try again a little later.')
-    setError(''); setSending(true)
+    leave(); setError(''); setSending(true)
     try {
       if (!demo) {
         const res = await sendRsvp({ name: name.trim(), phone, email, attending: attending as 'yes' | 'no', guests: attending === 'yes' ? guests : 0 })

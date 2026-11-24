@@ -321,25 +321,28 @@ const CALM = !/[?&]calm=0\b/.test(location.search) && (matchMedia('(prefers-redu
 {
   const html = document.documentElement
   const field = (el: EventTarget | null) => el instanceof Element && !!el.closest('.v2') && /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName)
-  let thaw = 0
+  // Leaving is not taken from `focusout` (an iPhone fires none when the field is removed, as on Next or Send): while
+  // frozen, a timer looks every 0.25 s whether a field still has the cursor. `html.typing` (v2.css keeps the board
+  // visible under it) and the `v2left` event (the story's postponed re-measure) hang off the same timer.
+  let watch = 0, tries = 0
+  const check = () => {
+    if (field(document.activeElement)) { tries = 0; return }
+    const full = parseFloat(html.style.getPropertyValue('--H')) || 0
+    if ((visualViewport?.height ?? innerHeight) < full * 0.85 && tries++ < 12) return // the keyboard is still on its way down
+    clearInterval(watch); watch = 0; tries = 0
+    html.style.removeProperty('--H'); html.classList.remove('typing')
+    if (SWIPE && !CALM && scrollY) scrollTo(0, 0) // the browser may have panned the locked page to show the field; nobody can drag it back
+    dispatchEvent(new Event('v2left'))
+  }
   addEventListener('focusin', (e) => {
     if (!field(e.target)) return
-    clearTimeout(thaw)
-    if (html.style.getPropertyValue('--H')) return // already frozen (moving from one field to the next)
-    const probe = document.body.appendChild(Object.assign(document.createElement('div'), { style: 'position:fixed;top:0;left:0;width:0;height:var(--H);visibility:hidden;pointer-events:none' }))
-    const h = probe.offsetHeight; probe.remove()
-    if (h > 100) html.style.setProperty('--H', h + 'px')
-  })
-  addEventListener('focusout', () => {
-    clearTimeout(thaw)
-    let tries = 0
-    const release = () => {
-      if (field(document.activeElement)) return
-      const full = parseFloat(html.style.getPropertyValue('--H')) || 0
-      if ((visualViewport?.height ?? innerHeight) < full * 0.85 && tries++ < 15) { thaw = window.setTimeout(release, 200); return } // the keyboard is still on its way down
-      html.style.removeProperty('--H')
+    html.classList.add('typing')
+    if (!html.style.getPropertyValue('--H')) {
+      const probe = document.body.appendChild(Object.assign(document.createElement('div'), { style: 'position:fixed;top:0;left:0;width:0;height:var(--H);visibility:hidden;pointer-events:none' }))
+      const h = probe.offsetHeight; probe.remove()
+      if (h > 100) html.style.setProperty('--H', h + 'px')
     }
-    thaw = window.setTimeout(release, 500)
+    if (!watch) watch = window.setInterval(check, 250)
   })
 }
 if (SWIPE && !CALM) document.documentElement.classList.add('swipe') // v2.css: the story is then drawn to the visible screen (dvh), not the toolbar-less one
@@ -748,14 +751,13 @@ function Animated() {
       // field is left.
       // And whatever else re-measures the page (the browser's own resize when the keyboard slides in): while a field
       // has the focus the board is held visible by a class (`.v2.typing` in v2.css), so no rewind can hide the field.
-      const typingClass = () => root.current?.classList.toggle('typing', typing())
-      root.current!.addEventListener('focusin', typingClass); root.current!.addEventListener('focusout', () => window.setTimeout(typingClass, 0))
       let roLater = false
       const remeasure = () => { clearTimeout(roT); roT = window.setTimeout(() => { if (typing()) roLater = true; else ScrollTrigger.refresh() }, 120) }
       const ro = new ResizeObserver(remeasure)
       const onResize = () => remeasure() // a real change of width (rotation, a desktop window): see the top of the file
       addEventListener(SWIPE ? 'v2width' : 'resize', onResize)
-      root.current!.addEventListener('focusout', () => { if (roLater) { roLater = false; window.setTimeout(() => { if (!typing()) ScrollTrigger.refresh() }, 300) } })
+      const left = () => { if (roLater) { roLater = false; ScrollTrigger.refresh() } }
+      addEventListener('v2left', left)
       ro.observe(stage.current!)
       // a reload always opens the invitation from the top (a restored scroll position would otherwise be stopped at the first gate)
       history.scrollRestoration = 'manual'
@@ -781,6 +783,7 @@ function Animated() {
         const clock = { t: 0 }
         const go = (dir: 1 | -1) => {
           if (playing || typing() || !intro.totalProgress() || intro.isActive()) return
+          if (root.current?.querySelector('.board-form')) return // the guest is filling in the form (name or contact step): the story stays put
           const t = tlNow.time(), next = dir > 0 ? STOPS.find((b) => b > t + 0.01) : [...STOPS].reverse().find((b) => b < t - 0.01)
           if (next === undefined) return
           playing = true
@@ -794,7 +797,8 @@ function Animated() {
           parts.forEach((p) => seq.to(clock, { t: p.to, duration: p.dur, ease: 'none' }))
           gsap.to(seq, { progress: 1, duration: seq.duration() / (dir > 0 ? 1 : 2.2), ease: 'sine.inOut', onUpdate: () => { head.s = toS(clock.t); tlNow.time(clock.t); show(head.s) }, onComplete: () => { playing = false; seq.kill(); dispatchEvent(new Event('v2rest')) } })
         }
-        const tStart = (e: TouchEvent) => { y0 = e.touches[0].clientY }
+        // (audit, 24 Nov) a drag that starts on the RSVP board is not a swipe: it used to send the story back a scene
+        const tStart = (e: TouchEvent) => { y0 = (e.target as Element).closest?.('.board') ? null : e.touches[0].clientY }
         const tEnd = (e: TouchEvent) => { if (y0 === null) return; const dy = e.changedTouches[0].clientY - y0; y0 = null; if (Math.abs(dy) > 36) go(dy < 0 ? 1 : -1) }
         // a wheel or trackpad sends a long tail of events: one burst = one swipe. (23 Nov: it did nothing in the couple's
         // Chrome. A trackpad's FIRST event is often tiny, and only that first event was looked at. Now the burst is
@@ -806,7 +810,7 @@ function Animated() {
         const mDown = (e: PointerEvent) => { my = e.pointerType === 'mouse' && !(e.target as Element).closest('button, a, input, summary, label') ? e.clientY : null }
         const mUp = (e: PointerEvent) => { if (my === null) return; const dy = e.clientY - my; my = null; if (Math.abs(dy) > 36) go(dy < 0 ? 1 : -1) }
         addEventListener('pointerdown', mDown); addEventListener('pointerup', mUp)
-        const key = (e: KeyboardEvent) => { if (typing()) return; if (['ArrowDown', 'PageDown', ' '].includes(e.key)) { e.preventDefault(); go(1) } else if (['ArrowUp', 'PageUp'].includes(e.key)) { e.preventDefault(); go(-1) } }
+        const key = (e: KeyboardEvent) => { if (typing() || (e.target as Element).closest?.('button, a, summary')) return; if (['ArrowDown', 'PageDown', ' '].includes(e.key)) { e.preventDefault(); go(1) } else if (['ArrowUp', 'PageUp'].includes(e.key)) { e.preventDefault(); go(-1) } }
         addEventListener('touchstart', tStart, { passive: true }); addEventListener('touchend', tEnd, { passive: true })
         addEventListener('wheel', wheel, { passive: true }); addEventListener('keydown', key)
         // the opening counts as a scene too: the arrow comes the moment the forest has stood up
@@ -850,7 +854,7 @@ function Animated() {
       addEventListener('v2rsvp', onRsvp)
 
       return () => {
-        removeEventListener('v2rsvp', onRsvp); ending?.kill(); unswipe(); removeEventListener(SWIPE ? 'v2width' : 'resize', onResize)
+        removeEventListener('v2rsvp', onRsvp); ending?.kill(); unswipe(); removeEventListener(SWIPE ? 'v2width' : 'resize', onResize); removeEventListener('v2left', left)
         alive = false; gsap.ticker.remove(chase); clearTimeout(timer); clearTimeout(roT); ro.disconnect(); clearInterval(watch); clearInterval(dbgTimer); dbg?.remove(); removeEventListener('wheel', onWheel); removeEventListener('keydown', open)
         ScrollTrigger.removeEventListener('refreshInit', place); ScrollTrigger.removeEventListener('refreshInit', before); ScrollTrigger.removeEventListener('refresh', after)
         removeEventListener('scroll', onScroll); removeEventListener('touchstart', down); removeEventListener('touchend', up); removeEventListener('touchcancel', up); removeEventListener('v2free', setFree); rootEl.removeEventListener('focusout', leftField)

@@ -12,6 +12,7 @@ export async function sendRsvp(data: Rsvp): Promise<{ ok: boolean; error?: strin
     method: 'POST',
     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
     body: JSON.stringify(data),
+    signal: AbortSignal.timeout(15000), // a weak connection must not leave the button on "Sending…" for ever
   })
   return res.json()
 }

@@ -172,7 +172,7 @@ html:has(.v2), html:has(.v2) body { background: #33463A; }
 .board { position: absolute; left: 0; right: 0; top: 0; margin-top: 26%; padding: 4px 2px; visibility: hidden; transform-origin: 50% 0; pointer-events: none; }
 .v2.board-live .board { pointer-events: auto; }
 /* a field has the focus: nothing may hide the board, or the field loses focus and the phone's keyboard shuts */
-.v2.typing .board { visibility: visible !important; }
+html.typing .v2 .board { visibility: visible !important; }
 .board-in { display: grid; gap: 12px; text-align: center; }
 .board-k { margin: 0; font: 600 0.8rem/1.3 var(--f-caps); letter-spacing: 0.22em; text-transform: uppercase; color: #E9C97A; }
 .board-q { margin: 0; font: 600 clamp(1.4rem, 7cqw, 1.7rem)/1.15 var(--f-serif); color: #F6EADA; text-wrap: balance; }
