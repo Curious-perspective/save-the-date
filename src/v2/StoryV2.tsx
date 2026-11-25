@@ -470,7 +470,8 @@ function Animated() {
       // …and never wait more than 2.5 s for them: the leaves can finish arriving while the opening plays
       const ready = Promise.race([decoded(firstImgs), new Promise<void>((r) => window.setTimeout(r, 2500))])
       ready.then(() => performance.mark('v2:first-pictures'))
-      let secondIn = false // the mid and far curtains and the forest are in: the first swipe may go
+      let secondIn = false // the middle curtain is in: the first swipe may go
+      let farIn = false, forestIn = false, allIn = false // the far curtain · the forest behind it · every later scene
       // (25 Nov, a true first visit on the couple's phone on a slow link: the first swipe had to wait 16 s, because it
       // waited for the two other leaf curtains AND the whole forest, 1.4 MB.) The first swipe now waits only for the
       // two other leaf curtains (0.57 MB): they are all it uncovers for its first 5 s. The forest follows, most
@@ -484,12 +485,13 @@ function Animated() {
           return decoded(fetchNow('.jbed img[data-src], .jp[data-src]'))
         })
         .then(() => {
+          farIn = true; dispatchEvent(new Event('v2hold'))
           root.current?.querySelectorAll<HTMLImageElement>('.L-grass img, .names img, img.branchA').forEach((i) => { i.fetchPriority = 'low' })
           root.current?.querySelectorAll<HTMLImageElement>('.L-forest img.pop, .L-sky img, .L-hills img').forEach((i) => { i.fetchPriority = 'high' })
           return decoded(fetchNow('.sA img[data-src], .names img[data-src], img.branchA[data-src]'))
         })
-        .then(() => { performance.mark('v2:forest'); return decoded(fetchNow('img[data-src]')) })
-        .then(() => { performance.mark('v2:all'); dispatchEvent(new Event('v2loaded')) })
+        .then(() => { performance.mark('v2:forest'); forestIn = true; dispatchEvent(new Event('v2hold')); return decoded(fetchNow('img[data-src]')) })
+        .then(() => { performance.mark('v2:all'); allIn = true; dispatchEvent(new Event('v2loaded')) })
       window.setTimeout(() => { secondIn = true; dispatchEvent(new Event('v2second')) }, 9000) // never hold a guest longer than this
 
       // ---- intro: the paper forest stands up, then the title glints on the leaves
@@ -506,9 +508,20 @@ function Animated() {
       if (/[?&]perf=1\b/.test(location.search)) {
         const box = document.body.appendChild(Object.assign(document.createElement('pre'), { style: 'position:fixed;z-index:999;left:6px;bottom:6px;margin:0;padding:8px 10px;font:12px/1.4 ui-monospace,Menlo,monospace;color:#fff;background:rgba(0,0,0,.78);border-radius:8px;pointer-events:none' }))
         const nav = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined
+        // how the downloads behaved: protocol, and per picture the average time queued, waiting for the first byte and
+        // downloading; then one 369 KB picture fetched again on its own, uncached, once everything else is in
+        let probe = ''
+        addEventListener('v2loaded', () => { const t = performance.now(); fetch(`${import.meta.env.BASE_URL}v2/resort/scene.webp?probe=${Date.now()}`, { cache: 'no-store' }).then((r) => { const f = performance.now() - t; return r.arrayBuffer().then((buf) => { probe = `\nprobe ${Math.round(buf.byteLength / 1024)}KB  first byte ${Math.round(f)}  total ${Math.round(performance.now() - t)} ms` }) }).catch(() => { probe = '\nprobe failed' }) }, { once: true })
+        const net = () => {
+          const r = (performance.getEntriesByType('resource') as PerformanceResourceTiming[]).filter((e) => /\.webp(\?|$)/.test(e.name) && e.responseEnd > 0 && !/probe=/.test(e.name))
+          if (!r.length) return ''
+          const avg = (f: (e: PerformanceResourceTiming) => number) => Math.round(r.reduce((a, e) => a + Math.max(0, f(e)), 0) / r.length)
+          const kb = Math.round(r.reduce((a, e) => a + (e.transferSize || 0), 0) / 1024)
+          return `\n${r[0].nextHopProtocol || '?'} · ${r.length} pictures · ${kb} KB\nqueued ${avg((e) => e.requestStart - e.startTime)}  first byte ${avg((e) => e.responseStart - e.requestStart)}  download ${avg((e) => e.responseEnd - e.responseStart)} ms${probe}`
+        }
         window.setInterval(() => {
           const m = (n: string) => { const e = performance.getEntriesByName(n)[0]; return e ? Math.round(e.startTime) + ' ms' : '…' }
-          box.textContent = `html arrived   ${nav ? Math.round(nav.responseEnd) : '?'} ms\nscript runs    ${m('v2:script')}\nstory built    ${m('v2:setup')}\nfirst pictures ${m('v2:first-pictures')}\nopening starts ${m('v2:intro-start')}\nopening done   ${m('v2:intro-done')}\ncan swipe      ${m('v2:second')}\nforest in      ${m('v2:forest')}\neverything in  ${m('v2:all')}`
+          box.textContent = `html arrived   ${nav ? Math.round(nav.responseEnd) : '?'} ms\nscript runs    ${m('v2:script')}\nstory built    ${m('v2:setup')}\nfirst pictures ${m('v2:first-pictures')}\nopening starts ${m('v2:intro-start')}\nopening done   ${m('v2:intro-done')}\ncan swipe      ${m('v2:second')}\nforest in      ${m('v2:forest')}\neverything in  ${m('v2:all')}${net()}`
         }, 300)
       }
       ready.then(() => { if (alive) intro.play() })
@@ -850,8 +863,10 @@ function Animated() {
         addEventListener('touchmove', noDrag, { passive: false })
         let playing = false, y0: number | null = null, lastW = 0
         const clock = { t: 0 }
+        const gaveUp = { far: false, forest: false }
         const go = (dir: 1 | -1) => {
           if (playing || typing() || !intro.totalProgress() || intro.isActive() || !secondIn) return
+          if (dir > 0 && !allIn && tlNow.time() > 1) return // the road, the resort and the dusk are not in yet
           if (root.current?.querySelector('.board-form')) return // the guest is filling in the form (name or contact step): the story stays put
           const t = tlNow.time(), next = dir > 0 ? STOPS.find((b) => b > t + 0.01) : [...STOPS].reverse().find((b) => b < t - 0.01)
           if (next === undefined) return
@@ -864,7 +879,24 @@ function Animated() {
           if (dir < 0) parts.reverse()
           const seq = gsap.timeline({ paused: true })
           parts.forEach((p) => seq.to(clock, { t: p.to, duration: p.dur, ease: 'none' }))
-          gsap.to(seq, { progress: 1, duration: seq.duration() / (dir > 0 ? 1 : 2.2), ease: 'sine.inOut', onUpdate: () => { head.s = toS(clock.t); tlNow.time(clock.t); show(head.s) }, onComplete: () => { playing = false; seq.kill(); dispatchEvent(new Event('v2rest')) } })
+          // NOTHING IS UNCOVERED BEFORE IT HAS ARRIVED (25 Nov, the couple: "the forest was not even fully in before I
+          // reached it"). Going forward, the play holds just before the middle leaves part until the far leaves are
+          // in, and just before the far leaves part until the forest is in; it carries on by itself when they are.
+          let holding = false
+          const play = gsap.to(seq, { progress: 1, duration: seq.duration() / (dir > 0 ? 1 : 2.2), ease: 'sine.inOut',
+            onUpdate: () => {
+              head.s = toS(clock.t); tlNow.time(clock.t); show(head.s)
+              if (dir > 0 && !holding && ((!farIn && !gaveUp.far && clock.t >= 0.33 && clock.t < 0.62) || (!forestIn && !gaveUp.forest && clock.t >= 0.64 && clock.t < 0.95))) {
+                holding = true; play.pause()
+                const which = clock.t < 0.62 ? 'far' : 'forest'
+                const go2 = () => { removeEventListener('v2hold', on); clearTimeout(giveUp); holding = false; play.resume() }
+                const on = () => { if (which === 'far' ? farIn : forestIn) go2() }
+                const giveUp = window.setTimeout(() => { gaveUp[which] = true; go2() }, 12000) // never hold a guest for ever
+                addEventListener('v2hold', on)
+              }
+            },
+            // the arrow for the next swipe comes only when the next scene's pictures are in
+            onComplete: () => { playing = false; seq.kill(); const rest = () => dispatchEvent(new Event('v2rest')); if (allIn || dir < 0) rest(); else addEventListener('v2loaded', rest, { once: true }) } })
         }
         // (audit, 24 Nov) a drag that starts on the RSVP board is not a swipe: it used to send the story back a scene
         const tStart = (e: TouchEvent) => { y0 = (e.target as Element).closest?.('.board') ? null : e.touches[0].clientY }
