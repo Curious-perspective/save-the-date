@@ -22,9 +22,16 @@ jobs:
       - run: npm ci
       - run: npm run build
         env:
-          BASE_PATH: /${{ github.event.repository.name }}/
+          # Where the site lives. Defaults: the GitHub Pages address (/save-the-date/). For the couple's own domain set
+          # the repository variables SITE_BASE=/ and SITE_URL=https://shreyakshay.com/ (and the Pages custom domain).
+          BASE_PATH: ${{ vars.SITE_BASE || format('/{0}/', github.event.repository.name) }}
+          VITE_SITE_URL: ${{ vars.SITE_URL || 'https://curious-perspective.github.io/save-the-date/v2/' }}
+          VITE_SITE_IMG: ${{ vars.SITE_URL || 'https://curious-perspective.github.io/save-the-date/' }}
           # where RSVPs are sent (the Google Sheet's web-app link); set as a repository variable
           VITE_RSVP_URL: ${{ vars.VITE_RSVP_URL }}
+      # On the couple's own domain the story itself is the front page (the older v1 moves to /v1/)
+      - if: ${{ vars.SITE_BASE == '/' }}
+        run: mkdir -p dist/v1 && mv dist/index.html dist/v1/index.html && cp dist/v2/index.html dist/index.html
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
