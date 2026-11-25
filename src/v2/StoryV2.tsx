@@ -471,8 +471,18 @@ function Animated() {
       const ready = Promise.race([decoded(firstImgs), new Promise<void>((r) => window.setTimeout(r, 2500))])
       ready.then(() => performance.mark('v2:first-pictures'))
       let secondIn = false // the mid and far curtains and the forest are in: the first swipe may go
-      ready.then(() => decoded(fetchNow('.jbed img[data-src], .jp[data-src], .sA img[data-src], .names img[data-src], img.branchA[data-src]')))
-        .then(() => { performance.mark('v2:second'); secondIn = true; dispatchEvent(new Event('v2second')); return decoded(fetchNow('img[data-src]')) })
+      // (25 Nov, a true first visit on the couple's phone on a slow link: the first swipe had to wait 16 s, because it
+      // waited for the two other leaf curtains AND the whole forest, 1.4 MB.) The first swipe now waits only for the
+      // two other leaf curtains (0.57 MB): they are all it uncovers for its first 5 s. The forest follows, most
+      // needed first (trees, sky, hills; the grass and the name clouds can come last), then every later scene.
+      ready.then(() => decoded(fetchNow('.jbed img[data-src], .jp[data-src]')))
+        .then(() => {
+          performance.mark('v2:second'); secondIn = true; dispatchEvent(new Event('v2second'))
+          root.current?.querySelectorAll<HTMLImageElement>('.L-grass img, .names img, img.branchA').forEach((i) => { i.fetchPriority = 'low' })
+          root.current?.querySelectorAll<HTMLImageElement>('.L-forest img.pop, .L-sky img, .L-hills img').forEach((i) => { i.fetchPriority = 'high' })
+          return decoded(fetchNow('.sA img[data-src], .names img[data-src], img.branchA[data-src]'))
+        })
+        .then(() => { performance.mark('v2:forest'); return decoded(fetchNow('img[data-src]')) })
         .then(() => { performance.mark('v2:all'); dispatchEvent(new Event('v2loaded')) })
       window.setTimeout(() => { secondIn = true; dispatchEvent(new Event('v2second')) }, 9000) // never hold a guest longer than this
 
@@ -492,7 +502,7 @@ function Animated() {
         const nav = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined
         window.setInterval(() => {
           const m = (n: string) => { const e = performance.getEntriesByName(n)[0]; return e ? Math.round(e.startTime) + ' ms' : '…' }
-          box.textContent = `html arrived   ${nav ? Math.round(nav.responseEnd) : '?'} ms\nscript runs    ${m('v2:script')}\nstory built    ${m('v2:setup')}\nfirst pictures ${m('v2:first-pictures')}\nopening starts ${m('v2:intro-start')}\nopening done   ${m('v2:intro-done')}\nforest ready   ${m('v2:second')}\neverything in  ${m('v2:all')}`
+          box.textContent = `html arrived   ${nav ? Math.round(nav.responseEnd) : '?'} ms\nscript runs    ${m('v2:script')}\nstory built    ${m('v2:setup')}\nfirst pictures ${m('v2:first-pictures')}\nopening starts ${m('v2:intro-start')}\nopening done   ${m('v2:intro-done')}\ncan swipe      ${m('v2:second')}\nforest in      ${m('v2:forest')}\neverything in  ${m('v2:all')}`
         }, 300)
       }
       ready.then(() => { if (alive) intro.play() })
