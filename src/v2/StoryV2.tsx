@@ -461,10 +461,14 @@ function Animated() {
       // then the other two curtains and the forest behind them (`second`); then every later scene and the music.
       // Images that wait carry `data-src` in the markup; `fetchNow` gives them their `src`.
       const firstImgs = gsap.utils.toArray<HTMLImageElement>('.jbed.d1 img, .jp.d1', root.current)
-      const decoded = (imgs: HTMLImageElement[]) => Promise.all(imgs.map((i) => i.decode().catch(() => undefined)))
+      // "arrived", not "decoded" (25 Nov, measured on the live site: the near leaves were downloaded after 1.0 s but
+      // `img.decode()` on all of them only answered after 3.9 s, and the story sat on the loader meanwhile; Safari is
+      // slower still at it). The browser decodes them as it paints, which is fast enough for these small pictures.
+      const decoded = (imgs: HTMLImageElement[]) => Promise.all(imgs.map((i) => (i.complete ? Promise.resolve() : new Promise<void>((r) => { i.addEventListener('load', () => r(), { once: true }); i.addEventListener('error', () => r(), { once: true }) }))))
       const fetchNow = (sel: string) => { const imgs = gsap.utils.toArray<HTMLImageElement>(sel, root.current).filter((i) => i.dataset.src); imgs.forEach((i) => { i.src = i.dataset.src!; delete i.dataset.src }); return imgs }
       performance.mark('v2:setup')
-      const ready = decoded(firstImgs)
+      // …and never wait more than 2.5 s for them: the leaves can finish arriving while the opening plays
+      const ready = Promise.race([decoded(firstImgs), new Promise<void>((r) => window.setTimeout(r, 2500))])
       ready.then(() => performance.mark('v2:first-pictures'))
       let secondIn = false // the mid and far curtains and the forest are in: the first swipe may go
       ready.then(() => decoded(fetchNow('.jbed img[data-src], .jp[data-src], .sA img[data-src], .names img[data-src], img.branchA[data-src]')))
@@ -475,11 +479,12 @@ function Animated() {
       // ---- intro: the paper forest stands up, then the title glints on the leaves
       const intro = gsap.timeline({ paused: true, defaults: { ease: 'power3.out' } })
       intro
-        .to('.loader', { autoAlpha: 0, duration: 0.7 })
-        .from('.sA .pop', { rotationX: 70, yPercent: 6, autoAlpha: 0, duration: 1.3, ease: 'back.out(1.2)', stagger: 0.15 }, 0.2)
-        .from('.jbed, .jp', { autoAlpha: 0, duration: 0.9, stagger: { each: 0.008, from: 'end' } }, 0.2)
-        .from('.std > *', { y: 24, autoAlpha: 0, duration: 1.1 }, 1.0)
-        .from('.hint', { autoAlpha: 0, duration: 0.8 }, 1.9)
+        // (25 Nov: shortened. The forest's pop-up is hidden behind the leaves, so it no longer takes time.)
+        .to('.loader', { autoAlpha: 0, duration: 0.45 })
+        .from('.sA .pop', { rotationX: 70, yPercent: 6, autoAlpha: 0, duration: 0.3 }, 0)
+        .from('.jbed, .jp', { autoAlpha: 0, duration: 0.6, stagger: { each: 0.004, from: 'end' } }, 0.05)
+        .from('.std > *', { y: 24, autoAlpha: 0, duration: 0.8 }, 0.4)
+        .from('.hint', { autoAlpha: 0, duration: 0.5 }, 0.9)
       if (import.meta.env.DEV) Object.assign(window, { v2Intro: intro })
       let alive = true
       if (/[?&]perf=1\b/.test(location.search)) {
@@ -549,6 +554,7 @@ function Animated() {
       const sw = () => stage.current!.clientWidth
       // The timeline is NOT scrubbed by ScrollTrigger directly: the scroll only pins the stage, and `drive()` below moves
       // the timeline towards the scroll position, but never past the next BEAT (see "the gates").
+      performance.mark('v2:tl-start')
       tl = gsap.timeline({ paused: true, defaults: { ease: 'none' }, onUpdate: render })
       tl
         // the forest: the bushes rise away (we step through them)
@@ -670,6 +676,7 @@ function Animated() {
       // or wheel burst is, the story stops at the next beat and holds there. When the scrolling has stopped
       // (`settle()`), the real scroll position is quietly put back where the story is (invisible: pinned), a rest close
       // to a beat glides onto it, and the gates move on, so the next gesture carries on from there.
+      performance.mark('v2:tl-end')
       const tlNow = tl
       const head = { s: 0 } // where the story is, in story time; the timeline is always at toT(head.s)
       const setS = (v: number, suppress = false) => { head.s = v; tlNow.time(toT(v), suppress) }
@@ -901,6 +908,7 @@ function Animated() {
       }
       addEventListener('v2rsvp', onRsvp)
 
+      performance.mark('v2:built')
       return () => {
         removeEventListener('v2rsvp', onRsvp); ending?.kill(); unswipe(); removeEventListener(SWIPE ? 'v2width' : 'resize', onResize); removeEventListener('v2left', left)
         alive = false; gsap.ticker.remove(chase); clearTimeout(timer); clearTimeout(roT); ro.disconnect(); clearInterval(watch); clearInterval(dbgTimer); dbg?.remove(); removeEventListener('wheel', onWheel); removeEventListener('keydown', open)
