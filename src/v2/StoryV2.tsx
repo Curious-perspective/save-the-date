@@ -475,9 +475,15 @@ function Animated() {
       // waited for the two other leaf curtains AND the whole forest, 1.4 MB.) The first swipe now waits only for the
       // two other leaf curtains (0.57 MB): they are all it uncovers for its first 5 s. The forest follows, most
       // needed first (trees, sky, hills; the grass and the name clouds can come last), then every later scene.
-      ready.then(() => decoded(fetchNow('.jbed img[data-src], .jp[data-src]')))
+      // (25 Nov, second fresh-visit reading from the couple's phone, about 90 KB/s: both curtains took 6 s, swipe at 9.6 s.)
+      // The first swipe waits for the MIDDLE curtain only: it is all the near leaves uncover for their first 2.6 s.
+      // The far curtain follows while the guest reads and swipes.
+      ready.then(() => decoded(fetchNow('.jbed.d2 img[data-src], .jp.d2[data-src]')))
         .then(() => {
           performance.mark('v2:second'); secondIn = true; dispatchEvent(new Event('v2second'))
+          return decoded(fetchNow('.jbed img[data-src], .jp[data-src]'))
+        })
+        .then(() => {
           root.current?.querySelectorAll<HTMLImageElement>('.L-grass img, .names img, img.branchA').forEach((i) => { i.fetchPriority = 'low' })
           root.current?.querySelectorAll<HTMLImageElement>('.L-forest img.pop, .L-sky img, .L-hills img').forEach((i) => { i.fetchPriority = 'high' })
           return decoded(fetchNow('.sA img[data-src], .names img[data-src], img.branchA[data-src]'))

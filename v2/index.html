@@ -31,7 +31,11 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&family=Great+Vibes&family=Tangerine:wght@700&display=swap" />
   </head>
   <body>
-    <div id="root"></div>
+    <!-- Shown the moment the page arrives, before the script has downloaded: the same "S & A" the story's own loader
+         shows (v2.css .loader), so a guest on a slow connection sees the invitation loading and not an empty screen.
+         React replaces it when it starts. -->
+    <div id="root"><div style="position:fixed;inset:0;display:grid;place-items:center;background:#F6EFE3"><span style="font:500 2.4rem 'Cormorant Garamond',Garamond,Georgia,serif;color:#2C3328;letter-spacing:.06em;animation:boot 1.6s ease-in-out infinite">S <em style="font-style:italic;color:#B98C3E">&amp;</em> A</span></div></div>
+    <style>@keyframes boot{50%{opacity:.45}}</style>
     <script type="module" src="/src/v2/main.tsx"></script>
   </body>
 </html>
