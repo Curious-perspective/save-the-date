@@ -22,6 +22,7 @@ addEventListener('resize', (e) => {
   syncH()
   if (innerWidth !== lastWidth) { lastWidth = innerWidth; dispatchEvent(new Event('v2width')) }
 }, true)
+performance.mark('v2:script')
 gsap.registerPlugin(ScrollTrigger, MotionPathPlugin, useGSAP)
 // autoRefreshEvents: ScrollTrigger no longer re-measures by itself on resize or when the tab comes back: every
 // refresh takes the pinned stage out of the page and puts it back, which drops the focus from an RSVP field and shuts
@@ -462,11 +463,13 @@ function Animated() {
       const firstImgs = gsap.utils.toArray<HTMLImageElement>('.jbed.d1 img, .jp.d1', root.current)
       const decoded = (imgs: HTMLImageElement[]) => Promise.all(imgs.map((i) => i.decode().catch(() => undefined)))
       const fetchNow = (sel: string) => { const imgs = gsap.utils.toArray<HTMLImageElement>(sel, root.current).filter((i) => i.dataset.src); imgs.forEach((i) => { i.src = i.dataset.src!; delete i.dataset.src }); return imgs }
+      performance.mark('v2:setup')
       const ready = decoded(firstImgs)
+      ready.then(() => performance.mark('v2:first-pictures'))
       let secondIn = false // the mid and far curtains and the forest are in: the first swipe may go
       ready.then(() => decoded(fetchNow('.jbed img[data-src], .jp[data-src], .sA img[data-src], .names img[data-src], img.branchA[data-src]')))
-        .then(() => { secondIn = true; dispatchEvent(new Event('v2second')); return decoded(fetchNow('img[data-src]')) })
-        .then(() => dispatchEvent(new Event('v2loaded')))
+        .then(() => { performance.mark('v2:second'); secondIn = true; dispatchEvent(new Event('v2second')); return decoded(fetchNow('img[data-src]')) })
+        .then(() => { performance.mark('v2:all'); dispatchEvent(new Event('v2loaded')) })
       window.setTimeout(() => { secondIn = true; dispatchEvent(new Event('v2second')) }, 9000) // never hold a guest longer than this
 
       // ---- intro: the paper forest stands up, then the title glints on the leaves
@@ -479,7 +482,16 @@ function Animated() {
         .from('.hint', { autoAlpha: 0, duration: 0.8 }, 1.9)
       if (import.meta.env.DEV) Object.assign(window, { v2Intro: intro })
       let alive = true
+      if (/[?&]perf=1\b/.test(location.search)) {
+        const box = document.body.appendChild(Object.assign(document.createElement('pre'), { style: 'position:fixed;z-index:999;left:6px;bottom:6px;margin:0;padding:8px 10px;font:12px/1.4 ui-monospace,Menlo,monospace;color:#fff;background:rgba(0,0,0,.78);border-radius:8px;pointer-events:none' }))
+        const nav = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined
+        window.setInterval(() => {
+          const m = (n: string) => { const e = performance.getEntriesByName(n)[0]; return e ? Math.round(e.startTime) + ' ms' : '…' }
+          box.textContent = `html arrived   ${nav ? Math.round(nav.responseEnd) : '?'} ms\nscript runs    ${m('v2:script')}\nstory built    ${m('v2:setup')}\nfirst pictures ${m('v2:first-pictures')}\nopening starts ${m('v2:intro-start')}\nopening done   ${m('v2:intro-done')}\nforest ready   ${m('v2:second')}\neverything in  ${m('v2:all')}`
+        }, 300)
+      }
       ready.then(() => { if (alive) intro.play() })
+      intro.eventCallback('onStart', () => performance.mark('v2:intro-start'))
 
       // ---- the hornbill: its position is a tween on this proxy, so scrolling back plays the flight in reverse
       // the paths below hold the P objects themselves, so a refresh (resize, rotate) re-reads the new perches
@@ -849,7 +861,7 @@ function Animated() {
         addEventListener('wheel', wheel, { passive: true }); addEventListener('keydown', key)
         // the opening counts as a scene too: the arrow comes the moment the forest has stood up
         // …and once what lies behind the first leaves has arrived (the arrow is the sign that a swipe will work)
-        const firstRest = () => { if (secondIn && intro.totalProgress() === 1) dispatchEvent(new Event('v2rest')) }
+        const firstRest = () => { if (intro.totalProgress() === 1 && !performance.getEntriesByName('v2:intro-done').length) performance.mark('v2:intro-done'); if (secondIn && intro.totalProgress() === 1) dispatchEvent(new Event('v2rest')) }
         intro.eventCallback('onComplete', firstRest); addEventListener('v2second', firstRest, { once: true })
         if (import.meta.env.DEV) Object.assign(window, { v2swipe: go })
         unswipe = () => { [html.style.overflow, html.style.overscrollBehavior, rootEl.style.touchAction] = was; removeEventListener('touchmove', noDrag); removeEventListener('touchstart', tStart); removeEventListener('touchend', tEnd); removeEventListener('wheel', wheel); removeEventListener('keydown', key); removeEventListener('pointerdown', mDown); removeEventListener('pointerup', mUp) }
