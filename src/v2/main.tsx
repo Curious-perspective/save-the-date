@@ -15,10 +15,13 @@ function Music() {
   const wanted = useRef(true) // false once the guest has turned it off themselves
   const play = () => Promise.all(audio.current.map((a) => a.play())).then(() => setOn(true), () => { audio.current.forEach((a) => a.pause()); setOn(false) })
   useEffect(() => {
-    audio.current = ['music', 'birds'].map((f) => { const a = new Audio(`${import.meta.env.BASE_URL}v2/${f}.mp3`); a.loop = true; return a })
+    // preload none: the two files (1 MB) must not compete with the first screen; they are fetched once the pictures are in (`v2loaded`) or on the guest's first touch, whichever comes first
+    audio.current = ['music', 'birds'].map((f) => { const a = new Audio(); a.preload = 'none'; a.src = `${import.meta.env.BASE_URL}v2/${f}.mp3`; a.loop = true; return a })
+    const warm = () => audio.current.forEach((a) => { if (a.preload !== 'auto') { a.preload = 'auto'; if (a.paused) a.load() } })
+    addEventListener('v2loaded', warm, { once: true })
     const tryIt = () => { if (wanted.current && audio.current[0].paused && !document.hidden) play() }
     const vis = () => { if (document.hidden) audio.current.forEach((a) => a.pause()); else tryIt() }
-    tryIt()
+    addEventListener('v2loaded', tryIt, { once: true }) // the unprompted first try waits for the pictures; a touch still starts it at once
     GESTURES.forEach((g) => addEventListener(g, tryIt, { passive: true }))
     document.addEventListener('visibilitychange', vis)
     return () => { GESTURES.forEach((g) => removeEventListener(g, tryIt)); document.removeEventListener('visibilitychange', vis); audio.current.forEach((a) => a.pause()) }

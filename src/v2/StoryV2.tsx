@@ -454,8 +454,20 @@ function Animated() {
     mm.add('all', () => {
       // start from clean inline styles (React StrictMode mounts twice in dev and can leave stale transforms behind)
       gsap.set('.sA, .sB, .names, .cloud-a, .cloud-b, .palash-grp, .jp, .jbed, .jfly, .std, .guide, .fam-face, .date-face, .board, .tint, .dusk, .glow, .rlamp, .rwin, .L-sky, .L-hills, .L-forest, .L-grass, .L-flies, .branchA, .riverside, .resort, .jeep2', { clearProps: 'transform,opacity,visibility,translate,rotate,scale' })
-      const firstImgs = gsap.utils.toArray<HTMLImageElement>('.sA img, .jbed.d1 img, .jp.d1', root.current)
-      const ready = Promise.all(firstImgs.map((i) => i.decode().catch(() => undefined)))
+      // LOADING IN THREE STEPS (25 Nov, the couple: "loading too slow in the start"). Everything used to download at once
+      // (about 4.5 MB: every painting, all three leaf curtains, the music), and the story waited for the whole forest,
+      // which the leaves hide anyway. Now only the NEAR leaves load first and the story opens on them (0.6 MB);
+      // then the other two curtains and the forest behind them (`second`); then every later scene and the music.
+      // Images that wait carry `data-src` in the markup; `fetchNow` gives them their `src`.
+      const firstImgs = gsap.utils.toArray<HTMLImageElement>('.jbed.d1 img, .jp.d1', root.current)
+      const decoded = (imgs: HTMLImageElement[]) => Promise.all(imgs.map((i) => i.decode().catch(() => undefined)))
+      const fetchNow = (sel: string) => { const imgs = gsap.utils.toArray<HTMLImageElement>(sel, root.current).filter((i) => i.dataset.src); imgs.forEach((i) => { i.src = i.dataset.src!; delete i.dataset.src }); return imgs }
+      const ready = decoded(firstImgs)
+      let secondIn = false // the mid and far curtains and the forest are in: the first swipe may go
+      ready.then(() => decoded(fetchNow('.jbed img[data-src], .jp[data-src], .sA img[data-src], .names img[data-src], img.branchA[data-src]')))
+        .then(() => { secondIn = true; dispatchEvent(new Event('v2second')); return decoded(fetchNow('img[data-src]')) })
+        .then(() => dispatchEvent(new Event('v2loaded')))
+      window.setTimeout(() => { secondIn = true; dispatchEvent(new Event('v2second')) }, 9000) // never hold a guest longer than this
 
       // ---- intro: the paper forest stands up, then the title glints on the leaves
       const intro = gsap.timeline({ paused: true, defaults: { ease: 'power3.out' } })
@@ -804,7 +816,7 @@ function Animated() {
         let playing = false, y0: number | null = null, lastW = 0
         const clock = { t: 0 }
         const go = (dir: 1 | -1) => {
-          if (playing || typing() || !intro.totalProgress() || intro.isActive()) return
+          if (playing || typing() || !intro.totalProgress() || intro.isActive() || !secondIn) return
           if (root.current?.querySelector('.board-form')) return // the guest is filling in the form (name or contact step): the story stays put
           const t = tlNow.time(), next = dir > 0 ? STOPS.find((b) => b > t + 0.01) : [...STOPS].reverse().find((b) => b < t - 0.01)
           if (next === undefined) return
@@ -836,7 +848,9 @@ function Animated() {
         addEventListener('touchstart', tStart, { passive: true }); addEventListener('touchend', tEnd, { passive: true })
         addEventListener('wheel', wheel, { passive: true }); addEventListener('keydown', key)
         // the opening counts as a scene too: the arrow comes the moment the forest has stood up
-        intro.eventCallback('onComplete', () => dispatchEvent(new Event('v2rest')))
+        // …and once what lies behind the first leaves has arrived (the arrow is the sign that a swipe will work)
+        const firstRest = () => { if (secondIn && intro.totalProgress() === 1) dispatchEvent(new Event('v2rest')) }
+        intro.eventCallback('onComplete', firstRest); addEventListener('v2second', firstRest, { once: true })
         if (import.meta.env.DEV) Object.assign(window, { v2swipe: go })
         unswipe = () => { [html.style.overflow, html.style.overscrollBehavior, rootEl.style.touchAction] = was; removeEventListener('touchmove', noDrag); removeEventListener('touchstart', tStart); removeEventListener('touchend', tEnd); removeEventListener('wheel', wheel); removeEventListener('keydown', key); removeEventListener('pointerdown', mDown); removeEventListener('pointerup', mUp) }
       }
@@ -896,23 +910,23 @@ function Animated() {
           {/* the resort: ONE whole painting again, standing behind the riverside; its own jeep is parked by the gate */}
           <div className="resort">
             <div className="art">
-              <img src="/v2/resort/scene.webp" alt="" fetchPriority="low" />
+              <img data-src="/v2/resort/scene.webp" alt="" fetchPriority="low" />
               {RWINDOWS.map(([x, y, w, h], i) => <i key={i} className="rwin" style={{ left: `${x}%`, top: `${y}%`, width: `${w}%`, height: `${h}%` }} />)}
               {RLAMPS.map(([x, y], i) => <i key={i} className="fly rlamp" style={{ left: `${x}%`, top: `${y}%`, animationDelay: `${-(i * 0.83) % 6}s` }} />)}
               {STRINGS.map(([x, y], i) => <i key={i} className="slight" style={{ left: `${x}%`, top: `${y}%` }} />)}
-              <img className="jeep2" src="/story/jeep.webp" alt="Shreya and Akshay's jeep, parked at the gate" fetchPriority="low" />
+              <img className="jeep2" data-src="/story/jeep.webp" alt="Shreya and Akshay's jeep, parked at the gate" fetchPriority="low" />
             </div>
           </div>
           <div className="riverside">
             {/* (no lights here any more: dusk now falls at the resort, after this painting has sunk away) */}
             <div className="art">
-              <img src="/v2/riverside/scene.webp" alt="" />
-              <img className="jeep" src="/story/jeep.webp" alt="Shreya and Akshay's jeep on the riverside road" fetchPriority="low" />
+              <img data-src="/v2/riverside/scene.webp" alt="" />
+              <img className="jeep" data-src="/story/jeep.webp" alt="Shreya and Akshay's jeep on the riverside road" fetchPriority="low" />
             </div>
           </div>
 
           <div className="palash-grp">
-            <img className="palash" src="/v2/palash.webp" alt="" fetchPriority="low" />
+            <img className="palash" data-src="/v2/palash.webp" alt="" fetchPriority="low" />
             <div className="sign-turn">
               <div className="fam-face plank plank-fam">
                 {fam.map((f) => (
@@ -940,27 +954,27 @@ function Animated() {
 
         {/* the forest */}
         <div className="scene sA">
-          <div className="layer L-sky"><img src="/hero/sky.webp" alt="" /></div>
-          <div className="layer L-hills"><img className="pop" src="/hero/hills.webp" alt="" /></div>
+          <div className="layer L-sky"><img data-src="/hero/sky.webp" alt="" /></div>
+          <div className="layer L-hills"><img className="pop" data-src="/hero/hills.webp" alt="" /></div>
           <div className="layer L-forest">
-            <img className="pop" src="/hero/forest.webp" alt="" />
-            <img className="deer deer-doe" src="/v2/chital-doe.webp" alt="" />
-            <img className="deer deer-stag" src="/v2/chital-stag.webp" alt="" />
+            <img className="pop" data-src="/hero/forest.webp" alt="" />
+            <img className="deer deer-doe" data-src="/v2/chital-doe.webp" alt="" />
+            <img className="deer deer-stag" data-src="/v2/chital-stag.webp" alt="" />
           </div>
           <div className="layer L-flies" aria-hidden="true">{FLIES.map((f, i) => <i key={i} className="fly" style={{ left: f.left, top: f.top, animationDelay: f.delay }} />)}</div>
-          <div className="layer L-grass"><img className="pop" src="/hero/grass.webp" alt="" /></div>
-          <img className="branchA" src="/v2/branch-r.webp" alt="" />
+          <div className="layer L-grass"><img className="pop" data-src="/hero/grass.webp" alt="" /></div>
+          <img className="branchA" data-src="/v2/branch-r.webp" alt="" />
         </div>
 
         {/* the names are lettered on two long, light clouds that drift together BEHIND the trees: "&amp; Akshay" between the
             forest and the far trees standing behind it, "Shreya" higher up behind both tree lines (z-order only, see v2.css) */}
         <h1 className="names" aria-label={`${content.couple.bride} & ${content.couple.groom} ${content.announce}`}>
           <span className="cloud cloud-a" aria-hidden="true">
-            <img src="/v2/cloud-a.webp" alt="" />
+            <img data-src="/v2/cloud-a.webp" alt="" />
             <span className="cl-name">{content.couple.bride}<span className="cl-amp">&amp;</span></span>
           </span>
           <span className="cloud cloud-b" aria-hidden="true">
-            <img src="/v2/cloud-b.webp" alt="" />
+            <img data-src="/v2/cloud-b.webp" alt="" />
             <span className="cl-name">{content.couple.groom}<span className="cl-sub">{content.announce}</span></span>
           </span>
         </h1>
@@ -972,12 +986,12 @@ function Animated() {
               {(['L', 'R'] as const).flatMap((sd) => [0, 1, 2].map((b) => (
                 <div key={sd + b} className={`jbed d${dd} ${sd} b${b}`}>
                   {[...bed(dd), ...layerOf(dd).slice(0, -MOVERS)].filter((lf) => (lf.x < 50) === (sd === 'L') && band(lf) === b).map((lf, i) => (
-                    <img key={i} className={`jleaf${lf.hang ? ' hang' : ''}`} src={leafSrc(lf)} alt="" style={{ left: `${lf.x - lf.w / 2}%`, width: `${lf.w}%`, ...(lf.hang ? { top: `${lf.y}%` } : { bottom: `${100 - lf.y}%` }), transform: `rotate(${lf.r}deg) scaleX(${lf.m ? -1 : 1})` }} />
+                    <img key={i} className={`jleaf${lf.hang ? ' hang' : ''}`} {...(dd === 1 ? { src: leafSrc(lf) } : { 'data-src': leafSrc(lf) })} alt="" style={{ left: `${lf.x - lf.w / 2}%`, width: `${lf.w}%`, ...(lf.hang ? { top: `${lf.y}%` } : { bottom: `${100 - lf.y}%` }), transform: `rotate(${lf.r}deg) scaleX(${lf.m ? -1 : 1})` }} />
                   ))}
                 </div>
               )))}
               {layerOf(dd).slice(-MOVERS).map((lf, i) => (
-                <img key={i} className={`jleaf jp d${dd}${lf.hang ? ' hang' : ''}`} src={leafSrc(lf)} alt="" style={{ left: `${lf.x - lf.w / 2}%`, width: `${lf.w}%`, ...(lf.hang ? { top: `${lf.y}%` } : { bottom: `${100 - lf.y}%` }) }} />
+                <img key={i} className={`jleaf jp d${dd}${lf.hang ? ' hang' : ''}`} {...(dd === 1 ? { src: leafSrc(lf) } : { 'data-src': leafSrc(lf) })} alt="" style={{ left: `${lf.x - lf.w / 2}%`, width: `${lf.w}%`, ...(lf.hang ? { top: `${lf.y}%` } : { bottom: `${100 - lf.y}%` }) }} />
               ))}
             </Fragment>
           ))}
@@ -997,7 +1011,7 @@ function Animated() {
               <img className="wf" src="/hornbill/wing-front.webp" alt="" />
             </div>
             <img className="perch-pose" src="/v2/hornbill-perch.webp" alt="" />
-            <img className="carry" src="/v2/scroll.webp" alt="" fetchPriority="low" />
+            <img className="carry" data-src="/v2/scroll.webp" alt="" fetchPriority="low" />
           </div></div>
         </div>
       </div>
